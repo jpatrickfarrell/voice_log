@@ -135,6 +135,7 @@ def edit_post(slug):
     
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
+        summary = request.form.get('summary', '').strip()
         privacy_level = request.form.get('privacy_level', 'public')
         is_published = request.form.get('is_published') == 'on'
         
@@ -145,6 +146,7 @@ def edit_post(slug):
         if title:
             post.update(
                 title=title,
+                summary=summary,
                 privacy_level=privacy_level,
                 is_published=is_published
             )

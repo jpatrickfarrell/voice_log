@@ -26,40 +26,40 @@
                     <div class="rich-text-editor">
                         <div class="editor-toolbar">
                             <button type="button" class="toolbar-btn" onclick="formatText('bold')" title="Bold">
-                                <i class="fas fa-bold"></i>
+                                <i class="bi bi-type-bold"></i>
                             </button>
                             <button type="button" class="toolbar-btn" onclick="formatText('italic')" title="Italic">
-                                <i class="fas fa-italic"></i>
+                                <i class="bi bi-type-italic"></i>
                             </button>
                             <button type="button" class="toolbar-btn" onclick="formatText('underline')" title="Underline">
-                                <i class="fas fa-underline"></i>
+                                <i class="bi bi-type-underline"></i>
                             </button>
                             <div class="toolbar-separator"></div>
                             <button type="button" class="toolbar-btn" onclick="formatText('h2')" title="Heading 2">
-                                <i class="fas fa-heading"></i> H2
+                                <i class="bi bi-type-h1"></i> H2
                             </button>
                             <button type="button" class="toolbar-btn" onclick="formatText('h3')" title="Heading 3">
-                                <i class="fas fa-heading"></i> H3
+                                <i class="bi bi-type-h2"></i> H3
                             </button>
                             <button type="button" class="toolbar-btn" onclick="formatText('h4')" title="Heading 4">
-                                <i class="fas fa-heading"></i> H4
+                                <i class="bi bi-type-h3"></i> H4
                             </button>
                             <div class="toolbar-separator"></div>
                             <button type="button" class="toolbar-btn" onclick="formatText('ul')" title="Bullet List">
-                                <i class="fas fa-list-ul"></i>
+                                <i class="bi bi-list-ul"></i>
                             </button>
                             <button type="button" class="toolbar-btn" onclick="formatText('ol')" title="Numbered List">
-                                <i class="fas fa-list-ol"></i>
+                                <i class="bi bi-list-ol"></i>
                             </button>
                             <button type="button" class="toolbar-btn" onclick="formatText('blockquote')" title="Quote">
-                                <i class="fas fa-quote-right"></i>
+                                <i class="bi bi-quote"></i>
                             </button>
                             <div class="toolbar-separator"></div>
                             <button type="button" class="toolbar-btn" onclick="formatText('link')" title="Insert Link">
-                                <i class="fas fa-link"></i>
+                                <i class="bi bi-link-45deg"></i>
                             </button>
                             <button type="button" class="toolbar-btn" onclick="formatText('code')" title="Code Block">
-                                <i class="fas fa-code"></i>
+                                <i class="bi bi-code-slash"></i>
                             </button>
                         </div>
                         <div id="summary-editor" class="editor-content" contenteditable="true" 
@@ -144,25 +144,25 @@
             </div>
             {% endif %}
 
-            {% if post.summary %}
+            {% if post.transcript %}
             <div class="form-section">
-                <h3>Summary</h3>
-                <div class="summary-preview">
-                    <p>{{ post.summary[:200] }}{% if post.summary|length > 200 %}...{% endif %}</p>
-                    <small class="form-help">Summary is automatically generated and cannot be edited here</small>
+                <h3>Transcript</h3>
+                <div class="transcript-preview">
+                    <p>{{ post.transcript[:200] }}{% if post.transcript|length > 200 %}...{% endif %}</p>
+                    <small class="form-help">Transcript is automatically generated and cannot be edited here</small>
                 </div>
             </div>
             {% endif %}
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Save Changes
+                    <i class="bi bi-check-circle"></i> Save Changes
                 </button>
                 <a href="{{ url_for('posts.view_post', slug=post.slug) }}" class="btn btn-outline">
-                    <i class="fas fa-times"></i> Cancel
+                    <i class="bi bi-x-circle"></i> Cancel
                 </a>
                 <button type="button" class="btn btn-danger" onclick="confirmDelete()">
-                    <i class="fas fa-trash"></i> Delete Post
+                    <i class="bi bi-trash"></i> Delete Post
                 </button>
             </div>
         </form>

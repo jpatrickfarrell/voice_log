@@ -297,16 +297,18 @@ Summary:"""
         try:
             current_app.logger.info("Using Google Gemini API for title generation")
             
-            prompt = f"""Create a compelling, concise title for this voice note transcript. The title should:
-1. Be {max_length} characters or less
-2. Capture the main topic or insight
-3. Be engaging and clickable
-4. Avoid generic words like "Voice Note" unless necessary
+            prompt = f"""Generate a single, compelling title for this voice note transcript.
+
+Requirements:
+- Maximum {max_length} characters
+- Capture the main topic or insight
+- Be engaging and clickable
+- Avoid generic words like "Voice Note" unless necessary
 
 Transcript:
 {transcript}
 
-Title:"""
+Return only the title, nothing else:"""
             
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
             
@@ -333,8 +335,24 @@ Title:"""
                 
                 # Clean up title
                 title = title.strip()
+                
+                # Remove quotes if present
                 if title.startswith('"') and title.endswith('"'):
                     title = title[1:-1]
+                
+                # Remove common prefixes that AI might add
+                prefixes_to_remove = [
+                    "Here are a few title options under 60 characters:",
+                    "Title:",
+                    "Suggested title:",
+                    "Here's a title:",
+                    "A good title would be:"
+                ]
+                
+                for prefix in prefixes_to_remove:
+                    if title.lower().startswith(prefix.lower()):
+                        title = title[len(prefix):].strip()
+                        break
                 
                 # Truncate if too long
                 if len(title) > max_length:
@@ -374,16 +392,18 @@ Title:"""
                 else:
                     raise e
             
-            prompt = f"""Create a compelling, concise title for this voice note transcript. The title should:
-1. Be {max_length} characters or less
-2. Capture the main topic or insight
-3. Be engaging and clickable
-4. Avoid generic words like "Voice Note" unless necessary
+            prompt = f"""Generate a single, compelling title for this voice note transcript.
+
+Requirements:
+- Maximum {max_length} characters
+- Capture the main topic or insight
+- Be engaging and clickable
+- Avoid generic words like "Voice Note" unless necessary
 
 Transcript:
 {transcript}
 
-Title:"""
+Return only the title, nothing else:"""
             
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
@@ -397,6 +417,20 @@ Title:"""
             # Remove quotes if present
             if title.startswith('"') and title.endswith('"'):
                 title = title[1:-1]
+            
+            # Remove common prefixes that AI might add
+            prefixes_to_remove = [
+                "Here are a few title options under 60 characters:",
+                "Title:",
+                "Suggested title:",
+                "Here's a title:",
+                "A good title would be:"
+            ]
+            
+            for prefix in prefixes_to_remove:
+                if title.lower().startswith(prefix.lower()):
+                    title = title[len(prefix):].strip()
+                    break
             
             # Truncate if too long
             if len(title) > max_length:

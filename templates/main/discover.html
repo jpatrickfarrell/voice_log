@@ -1,0 +1,620 @@
+{% extends "base.html" %}
+
+{% block title %}Discover Voice Posts - Voice Log{% endblock %}
+
+{% block head %}
+<meta name="description" content="Discover and listen to public voice posts on Voice Log. Browse listenable blog content from creators worldwide.">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Discover Voice Posts</h1>
+        <p class="subtitle">Explore listenable blog posts from creators around the world</p>
+    </div>
+    {% if current_user.is_authenticated %}
+    <div>
+        <a href="{{ url_for('posts.create_post') }}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Share Your Voice
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Filter Options -->
+<div class="filter-section">
+    <div class="card">
+        <div class="card-body">
+            <div class="row align-items-center g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control" placeholder="Search posts..." id="searchFilter">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="sortFilter">
+                        <option value="recent">Most Recent</option>
+                        <option value="popular">Most Popular</option>
+                        <option value="most_played">Most Played</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="durationFilter">
+                        <option value="">All Durations</option>
+                        <option value="short">Under 2 minutes</option>
+                        <option value="medium">2-5 minutes</option>
+                        <option value="long">Over 5 minutes</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Posts Grid -->
+<div class="posts-section">
+    {% if posts %}
+    <div class="posts-grid">
+        {% for post in posts %}
+        <article class="post-item" data-post-id="{{ post.id }}">
+            <div class="post-card">
+                <!-- Post Header -->
+                <div class="post-card-header">
+                    <div class="post-meta">
+                        <div class="author-info">
+                            <i class="bi bi-person-circle"></i>
+                            <span class="author-name">{{ post.username or 'Anonymous' }}</span>
+                        </div>
+                        <div class="post-date">
+                            <i class="bi bi-calendar3"></i>
+                            <time datetime="{{ post.created_at }}">{{ post.created_at }}</time>
+                        </div>
+                    </div>
+                    <div class="post-duration">
+                        <i class="bi bi-clock"></i>
+                        <span>{{ post.format_duration() }}</span>
+                    </div>
+                </div>
+                
+                <!-- Post Content -->
+                <div class="post-card-content">
+                    <h3 class="post-title">
+                        <a href="{{ url_for('posts.view_post', slug=post.slug) }}">{{ post.title }}</a>
+                    </h3>
+                    
+                    {% if post.summary %}
+                    <div class="post-summary">
+                        {{ post.summary[:150] }}{% if post.summary|length > 150 %}...{% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Mini Audio Player -->
+                    <div class="mini-player">
+                        <audio preload="none" data-post-slug="{{ post.slug }}">
+                            <source src="{{ post.get_audio_url() }}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                        <div class="player-controls">
+                            <button class="play-btn" data-audio-target="audio">
+                                <i class="bi bi-play-fill"></i>
+                            </button>
+                            <div class="player-info">
+                                <div class="player-title">{{ post.title }}</div>
+                                <div class="player-progress">
+                                    <div class="progress">
+                                        <div class="progress-bar"></div>
+                                    </div>
+                                    <div class="time-display">
+                                        <span class="current-time">0:00</span>
+                                        <span class="total-time">{{ post.format_duration() }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Post Footer -->
+                <div class="post-card-footer">
+                    <div class="post-stats">
+                        <span class="stat">
+                            <i class="bi bi-eye"></i>
+                            <span class="stat-count">{{ post.get_analytics()['view_count'] }}</span>
+                        </span>
+                        <span class="stat">
+                            <i class="bi bi-play-circle"></i>
+                            <span class="stat-count">{{ post.get_analytics()['play_count'] }}</span>
+                        </span>
+                    </div>
+                    
+                    <div class="post-actions">
+                        <button class="btn btn-sm btn-outline-secondary" 
+                                onclick="sharePost('{{ post.title }}', '{{ url_for('posts.view_post', slug=post.slug, _external=True) }}')"
+                                title="Share">
+                            <i class="bi bi-share"></i>
+                        </button>
+                        <a href="{{ url_for('posts.view_post', slug=post.slug) }}" 
+                           class="btn btn-sm btn-primary">
+                            Listen
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    
+    <!-- Load More -->
+    {% if has_more %}
+    <div class="load-more-section">
+        <button class="btn btn-outline-primary btn-lg" id="loadMoreBtn">
+            <i class="bi bi-arrow-down-circle"></i> Load More Posts
+        </button>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-state-content">
+            <i class="bi bi-music-note-list display-1 text-muted"></i>
+            <h3>No posts found</h3>
+            <p class="text-muted">Be the first to share your voice! Create a post to get the conversation started.</p>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('posts.create_post') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-circle"></i> Create First Post
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-person-plus"></i> Join Voice Log
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.filter-section {
+    margin-bottom: 2rem;
+}
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.post-item {
+    height: 100%;
+}
+
+.post-card {
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-md);
+    transition: all 0.15s ease;
+}
+
+.post-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.post-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.post-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.author-info,
+.post-date {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.author-name {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.post-duration {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.post-card-content {
+    flex: 1;
+    margin-bottom: 1rem;
+}
+
+.post-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.post-title a {
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.post-title a:hover {
+    color: var(--primary-main);
+}
+
+.post-summary {
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+/* Mini Audio Player */
+.mini-player {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.player-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.play-btn {
+    width: 32px;
+    height: 32px;
+    background: var(--primary-main);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease;
+}
+
+.play-btn:hover {
+    background: var(--primary-dark);
+}
+
+.play-btn.playing {
+    background: var(--secondary-green);
+}
+
+.player-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.player-title {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0.25rem;
+}
+
+.player-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.progress {
+    flex: 1;
+    height: 4px;
+    background: var(--border-light);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--primary-main);
+    width: 0;
+    transition: width 0.1s ease;
+}
+
+.time-display {
+    display: flex;
+    gap: 0.25rem;
+    font-size: 0.625rem;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+.post-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.post-stats {
+    display: flex;
+    gap: 1rem;
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.post-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.load-more-section {
+    text-align: center;
+    margin: 3rem 0;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-state-content {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.empty-state h3 {
+    margin: 1rem 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .posts-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .post-card {
+        padding: 1rem;
+    }
+    
+    .filter-section .row > div {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Audio player states */
+.mini-player.loading .play-btn {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.mini-player.error .play-btn {
+    background: #EF4444;
+}
+
+.mini-player.error .player-title::after {
+    content: " (Error loading audio)";
+    color: #EF4444;
+}
+
+/* Animation for new posts loading */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.post-item.new {
+    animation: fadeInUp 0.5s ease-out;
+}
+</style>
+
+<script>
+let currentPage = {{ page }};
+let isLoading = false;
+let currentAudio = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFilters();
+    initializeAudioPlayers();
+    initializeLoadMore();
+});
+
+function initializeFilters() {
+    const searchFilter = document.getElementById('searchFilter');
+    const sortFilter = document.getElementById('sortFilter');
+    const durationFilter = document.getElementById('durationFilter');
+    
+    // Search filter
+    let searchTimeout;
+    searchFilter.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            filterPosts();
+        }, 300);
+    });
+    
+    // Sort and duration filters
+    sortFilter.addEventListener('change', filterPosts);
+    durationFilter.addEventListener('change', filterPosts);
+}
+
+function filterPosts() {
+    const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
+    const sortBy = document.getElementById('sortFilter').value;
+    const duration = document.getElementById('durationFilter').value;
+    
+    const posts = document.querySelectorAll('.post-item');
+    
+    posts.forEach(post => {
+        const title = post.querySelector('.post-title a').textContent.toLowerCase();
+        const summary = post.querySelector('.post-summary')?.textContent.toLowerCase() || '';
+        const author = post.querySelector('.author-name').textContent.toLowerCase();
+        
+        // Search filter
+        const matchesSearch = !searchTerm || 
+            title.includes(searchTerm) || 
+            summary.includes(searchTerm) || 
+            author.includes(searchTerm);
+        
+        // Duration filter (this would need backend support for proper filtering)
+        const matchesDuration = true; // Placeholder
+        
+        if (matchesSearch && matchesDuration) {
+            post.style.display = '';
+        } else {
+            post.style.display = 'none';
+        }
+    });
+}
+
+function initializeAudioPlayers() {
+    const playButtons = document.querySelectorAll('.play-btn');
+    
+    playButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const miniPlayer = this.closest('.mini-player');
+            const audio = miniPlayer.querySelector('audio');
+            
+            if (currentAudio && currentAudio !== audio) {
+                pauseAudio(currentAudio);
+            }
+            
+            if (audio.paused) {
+                playAudio(audio, miniPlayer);
+            } else {
+                pauseAudio(audio);
+            }
+        });
+    });
+}
+
+function playAudio(audio, miniPlayer) {
+    const playBtn = miniPlayer.querySelector('.play-btn');
+    const progressBar = miniPlayer.querySelector('.progress-bar');
+    const currentTimeEl = miniPlayer.querySelector('.current-time');
+    
+    audio.play().then(() => {
+        currentAudio = audio;
+        playBtn.innerHTML = '<i class="bi bi-pause-fill"></i>';
+        playBtn.classList.add('playing');
+        
+        // Track play event
+        const postSlug = audio.dataset.postSlug;
+        if (postSlug) {
+            VoiceLog.trackPlayEvent && VoiceLog.trackPlayEvent(postSlug);
+        }
+    }).catch(err => {
+        console.error('Audio play error:', err);
+        miniPlayer.classList.add('error');
+    });
+    
+    // Update progress
+    audio.addEventListener('timeupdate', () => {
+        if (audio.duration) {
+            const progress = (audio.currentTime / audio.duration) * 100;
+            progressBar.style.width = progress + '%';
+            currentTimeEl.textContent = formatTime(audio.currentTime);
+        }
+    });
+    
+    audio.addEventListener('ended', () => {
+        pauseAudio(audio);
+    });
+}
+
+function pauseAudio(audio) {
+    const miniPlayer = audio.closest('.mini-player');
+    const playBtn = miniPlayer.querySelector('.play-btn');
+    
+    audio.pause();
+    playBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
+    playBtn.classList.remove('playing');
+    
+    if (currentAudio === audio) {
+        currentAudio = null;
+    }
+}
+
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+}
+
+function initializeLoadMore() {
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
+            
+            // Simulate API call (replace with actual API call)
+            setTimeout(() => {
+                // Add new posts here
+                isLoading = false;
+                this.disabled = false;
+                this.innerHTML = '<i class="bi bi-arrow-down-circle"></i> Load More Posts';
+                
+                // Hide button if no more posts
+                // this.style.display = 'none';
+            }, 1000);
+        });
+    }
+}
+
+// Share functionality
+function sharePost(title, url) {
+    VoiceLog.sharePost(title, url);
+}
+</script>
+{% endblock %}

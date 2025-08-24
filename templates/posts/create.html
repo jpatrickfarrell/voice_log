@@ -1,0 +1,676 @@
+{% extends "base.html" %}
+
+{% block title %}Create Voice Post - Voice Log{% endblock %}
+
+{% block head %}
+<meta name="description" content="Create a new voice post on Voice Log. Upload audio, generate transcripts, and publish listenable blog posts.">
+{% endblock %}
+
+{% block content %}
+<div class="create-post-page">
+    <div class="page-header">
+        <div>
+            <h1>Create Voice Post</h1>
+            <p class="subtitle">Upload your audio and transform it into a listenable blog post with transcripts and summaries.</p>
+        </div>
+    </div>
+
+    <div class="create-form-container">
+        <form method="POST" enctype="multipart/form-data" class="create-form" id="createPostForm">
+            <!-- Basic Information Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h3><i class="bi bi-info-circle"></i> Basic Information</h3>
+                    <p>Provide basic details about your voice post</p>
+                </div>
+                
+                <div class="section-content">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="title" class="form-label">
+                                Title <span class="text-muted">(optional)</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="title" 
+                                   name="title" 
+                                   placeholder="Leave blank to auto-generate from transcript"
+                                   maxlength="100">
+                            <div class="form-text">
+                                If left blank, we'll generate a compelling title from your transcript
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="privacy_level" class="form-label">Privacy Level</label>
+                            <select class="form-control" id="privacy_level" name="privacy_level" required>
+                                <option value="public">Public - Anyone can find and listen</option>
+                                <option value="unlisted">Unlisted - Only people with the link</option>
+                                <option value="private">Private - Only you can access</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Upload Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h3><i class="bi bi-mic"></i> Audio File</h3>
+                    <p>Upload your voice recording (MP3, WAV, M4A, etc.)</p>
+                </div>
+                
+                <div class="section-content">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">
+                            <i class="bi bi-cloud-upload"></i>
+                        </div>
+                        <div class="upload-text">
+                            <h4>Drop your audio file here or click to browse</h4>
+                            <p>Supports MP3, WAV, FLAC, M4A, AAC, OGG, WEBM up to 50MB</p>
+                        </div>
+                        <input type="file" 
+                               class="form-control d-none" 
+                               id="audio_file" 
+                               name="audio_file" 
+                               accept="audio/*" 
+                               required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    
+                    <div class="file-preview d-none" id="filePreview">
+                        <!-- File preview will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Processing Options Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h3><i class="bi bi-cpu"></i> Processing Options</h3>
+                    <p>Choose how to process your audio file</p>
+                </div>
+                
+                <div class="section-content">
+                    <div class="processing-options">
+                        <div class="form-check">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="auto_process" 
+                                   name="auto_process" 
+                                   checked>
+                            <label class="form-check-label" for="auto_process">
+                                <strong>Auto-process audio</strong>
+                                <div class="option-description">
+                                    Automatically generate transcript, title, and summary using AI
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="processing-info">
+                            <div class="info-item">
+                                <i class="bi bi-file-text"></i>
+                                <span>Transcript generation using OpenAI Whisper</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="bi bi-magic"></i>
+                                <span>AI-powered title and summary creation</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="bi bi-clock"></i>
+                                <span>Processing typically takes 1-2 minutes</span>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Note:</strong> AI processing requires an OpenAI API key to be configured. 
+                            You can also process posts manually after creation.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                    <i class="bi bi-arrow-left"></i> Cancel
+                </button>
+                
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <span class="btn-text">
+                        <i class="bi bi-plus-circle"></i> Create Post
+                    </span>
+                    <span class="btn-loading d-none">
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        Creating...
+                    </span>
+                </button>
+            </div>
+        </form>
+        
+        <!-- Quick Record Section (for future mobile implementation) -->
+        <div class="quick-record-section d-none" id="quickRecordSection">
+            <div class="section-header">
+                <h3><i class="bi bi-mic-fill"></i> Quick Record</h3>
+                <p>Record directly from your device</p>
+            </div>
+            
+            <div class="record-controls">
+                <button type="button" class="btn btn-danger btn-lg record-btn" id="recordBtn">
+                    <i class="bi bi-mic"></i>
+                    <span>Start Recording</span>
+                </button>
+                
+                <div class="record-status d-none" id="recordStatus">
+                    <div class="recording-indicator">
+                        <div class="pulse"></div>
+                        <span>Recording...</span>
+                    </div>
+                    <div class="record-time">00:00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.create-post-page {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.create-form-container {
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.create-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-section {
+    border-bottom: 1px solid var(--border-light);
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.section-header {
+    background: var(--bg-secondary);
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.section-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-header h3 i {
+    color: var(--primary-main);
+}
+
+.section-header p {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.section-content {
+    padding: 1.5rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.form-control {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    transition: border-color 0.15s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-main);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    outline: none;
+}
+
+.form-text {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Upload Area */
+.upload-area {
+    border: 2px dashed var(--border-medium);
+    border-radius: var(--radius-lg);
+    padding: 3rem;
+    text-align: center;
+    background: var(--bg-secondary);
+    transition: all 0.15s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.upload-area:hover {
+    border-color: var(--primary-main);
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.upload-area.dragover {
+    border-color: var(--primary-main);
+    background: rgba(139, 92, 246, 0.1);
+    transform: scale(1.02);
+}
+
+.upload-icon {
+    font-size: 3rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+.upload-area:hover .upload-icon {
+    color: var(--primary-main);
+}
+
+.upload-text h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.upload-text p {
+    color: var(--text-muted);
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.file-preview {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.file-info i {
+    font-size: 2rem;
+    color: var(--primary-main);
+}
+
+.file-details {
+    flex: 1;
+}
+
+.file-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.file-size {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* Processing Options */
+.processing-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.form-check-input {
+    margin: 0;
+    margin-top: 0.25rem;
+}
+
+.form-check-label {
+    flex: 1;
+}
+
+.option-description {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.processing-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-left: 1.75rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.info-item i {
+    color: var(--primary-main);
+    width: 16px;
+}
+
+/* Form Actions */
+.form-actions {
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.btn {
+    min-width: 120px;
+    position: relative;
+}
+
+.btn-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+}
+
+/* Quick Record Section */
+.quick-record-section {
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    margin-top: 2rem;
+    overflow: hidden;
+}
+
+.record-controls {
+    text-align: center;
+}
+
+.record-btn {
+    width: 200px;
+    height: 60px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.record-status {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.recording-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #EF4444;
+    font-weight: 500;
+}
+
+.pulse {
+    width: 12px;
+    height: 12px;
+    background: #EF4444;
+    border-radius: 50%;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.record-time {
+    font-family: 'Courier New', monospace;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .upload-area {
+        padding: 2rem 1rem;
+    }
+    
+    .upload-icon {
+        font-size: 2rem;
+    }
+    
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+    }
+    
+    .processing-info {
+        margin-left: 0;
+    }
+    
+    .section-content {
+        padding: 1rem;
+    }
+    
+    .section-header {
+        padding: 1rem;
+    }
+}
+
+/* Form validation styles */
+.was-validated .form-control:invalid,
+.form-control.is-invalid {
+    border-color: #DC3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.was-validated .form-control:valid,
+.form-control.is-valid {
+    border-color: #198754;
+    box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.1);
+}
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #DC3545;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFileUpload();
+    initializeFormSubmission();
+});
+
+function initializeFileUpload() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('audio_file');
+    const filePreview = document.getElementById('filePreview');
+    
+    // Click to upload
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFileSelection(files[0]);
+        }
+    });
+    
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFileSelection(e.target.files[0]);
+        }
+    });
+}
+
+function handleFileSelection(file) {
+    const filePreview = document.getElementById('filePreview');
+    const uploadArea = document.getElementById('uploadArea');
+    
+    // Validate file
+    if (!validateAudioFile(file)) {
+        return;
+    }
+    
+    // Show file preview
+    filePreview.innerHTML = `
+        <div class="file-info">
+            <i class="bi bi-music-note-beamed"></i>
+            <div class="file-details">
+                <div class="file-name">${file.name}</div>
+                <div class="file-size">${formatFileSize(file.size)}</div>
+                <div class="file-type">${file.type}</div>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFileSelection()">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    `;
+    
+    filePreview.classList.remove('d-none');
+    uploadArea.style.display = 'none';
+}
+
+function validateAudioFile(file) {
+    const allowedTypes = [
+        'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/flac', 
+        'audio/mp4', 'audio/m4a', 'audio/aac', 'audio/ogg', 
+        'audio/webm', 'audio/x-m4a'
+    ];
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    
+    if (!allowedTypes.includes(file.type) && !file.name.match(/\.(mp3|wav|flac|m4a|aac|ogg|webm)$/i)) {
+        VoiceLog.showToast('Please select a valid audio file (MP3, WAV, FLAC, M4A, AAC, OGG, WEBM)', 'error');
+        return false;
+    }
+    
+    if (file.size > maxSize) {
+        VoiceLog.showToast('File size must be less than 50MB', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+function clearFileSelection() {
+    const fileInput = document.getElementById('audio_file');
+    const filePreview = document.getElementById('filePreview');
+    const uploadArea = document.getElementById('uploadArea');
+    
+    fileInput.value = '';
+    filePreview.classList.add('d-none');
+    uploadArea.style.display = 'block';
+}
+
+function initializeFormSubmission() {
+    const form = document.getElementById('createPostForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    form.addEventListener('submit', function(e) {
+        const btnText = submitBtn.querySelector('.btn-text');
+        const btnLoading = submitBtn.querySelector('.btn-loading');
+        
+        // Show loading state
+        btnText.classList.add('d-none');
+        btnLoading.classList.remove('d-none');
+        submitBtn.disabled = true;
+        
+        // If auto-process is enabled, show additional message
+        const autoProcess = document.getElementById('auto_process').checked;
+        if (autoProcess) {
+            VoiceLog.showToast('Processing may take 1-2 minutes for AI transcription and summary generation.', 'info');
+        }
+    });
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+</script>
+{% endblock %}

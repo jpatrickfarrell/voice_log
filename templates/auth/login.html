@@ -1,0 +1,631 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Voice Log{% endblock %}
+
+{% block head %}
+<meta name="description" content="Login to Voice Log to access your voice posts and create new listenable blog content.">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <!-- Header -->
+        <div class="auth-header">
+            <div class="logo">
+                <i class="bi bi-mic-fill"></i>
+                <span>Voice Log</span>
+            </div>
+            <h1>Welcome Back</h1>
+            <p>Sign in to your account to continue creating and sharing voice posts.</p>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="username">Username or Email</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-person input-icon"></i>
+                    <input type="text" 
+                           id="username" 
+                           name="username" 
+                           placeholder="Enter your username or email"
+                           required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-lock input-icon"></i>
+                    <input type="password" 
+                           id="password" 
+                           name="password" 
+                           placeholder="Enter your password"
+                           required>
+                    <button type="button" class="password-toggle" id="togglePassword">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-options">
+                <label class="checkbox-wrapper">
+                    <input type="checkbox" id="remember" name="remember">
+                    <span class="checkmark"></span>
+                    <span class="checkbox-text">Remember me</span>
+                </label>
+                
+                <a href="#" class="forgot-password">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="btn-primary">
+                <span class="btn-text">Sign In</span>
+                <span class="btn-loading">
+                    <div class="spinner"></div>
+                    Signing in...
+                </span>
+            </button>
+        </form>
+
+        <!-- Divider -->
+        <div class="divider">
+            <span>or</span>
+        </div>
+
+        <!-- Demo Account -->
+        <div class="demo-account">
+            <p>Try Voice Log with a demo account:</p>
+            <button type="button" class="btn-secondary" id="demoLogin">
+                <i class="bi bi-play-circle"></i>
+                Login as Demo User
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="{{ url_for('auth.register') }}">Create one here</a></p>
+        </div>
+    </div>
+
+    <!-- Right Side Panel -->
+    <div class="auth-panel">
+        <div class="panel-content">
+            <h2>Transform Your Voice Into Content</h2>
+            <p>Sign in to continue creating and sharing your voice with the world.</p>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
+                    <div class="feature-text">
+                        <h3>Instant Publishing</h3>
+                        <p>Upload audio and get a public link immediately</p>
+                    </div>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <div class="feature-text">
+                        <h3>AI-Powered</h3>
+                        <p>Automatic transcription and smart summaries</p>
+                    </div>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="bi bi-phone"></i>
+                    </div>
+                    <div class="feature-text">
+                        <h3>Mobile First</h3>
+                        <p>Record and publish from anywhere</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">Posts Created</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">2K+</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">100K+</div>
+                    <div class="stat-label">Minutes Listened</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+/* Auth Container */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Auth Card */
+.auth-card {
+    flex: 1;
+    max-width: 450px;
+    background: white;
+    padding: 3rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+.auth-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-main);
+}
+
+.logo i {
+    font-size: 2rem;
+}
+
+.auth-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.auth-header p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+/* Form */
+.auth-form {
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    color: var(--text-muted);
+    font-size: 1.125rem;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 0.875rem 1rem 0.875rem 2.75rem;
+    border: 2px solid var(--border-light);
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.input-wrapper input:focus {
+    outline: none;
+    border-color: var(--primary-main);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.input-wrapper input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Password Toggle */
+.password-toggle {
+    position: absolute;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    font-size: 1.125rem;
+    transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+    color: var(--text-primary);
+}
+
+/* Form Options */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-light);
+    border-radius: 6px;
+    position: relative;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.checkbox-wrapper input:checked + .checkmark {
+    background: var(--primary-main);
+    border-color: var(--primary-main);
+}
+
+.checkbox-wrapper input:checked + .checkmark::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: bold;
+}
+
+.checkbox-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.forgot-password {
+    color: var(--primary-main);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+/* Button */
+.btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, var(--primary-main) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-loading {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-primary.loading .btn-text {
+    display: none;
+}
+
+.btn-primary.loading .btn-loading {
+    display: flex;
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Divider */
+.divider {
+    text-align: center;
+    margin: 2rem 0;
+    position: relative;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border-light);
+}
+
+.divider span {
+    background: white;
+    padding: 0 1rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+/* Demo Account */
+.demo-account {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.demo-account p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: 2px solid var(--border-light);
+    border-radius: 10px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    background: none;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary-main);
+    color: var(--primary-main);
+    transform: translateY(-1px);
+}
+
+/* Footer */
+.auth-footer {
+    text-align: center;
+    margin-top: auto;
+}
+
+.auth-footer p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.auth-footer a {
+    color: var(--primary-main);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Right Panel */
+.auth-panel {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: white;
+}
+
+.panel-content {
+    max-width: 500px;
+}
+
+.panel-content h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.panel-content > p {
+    font-size: 1.125rem;
+    opacity: 0.9;
+    margin-bottom: 3rem;
+    line-height: 1.6;
+}
+
+/* Features */
+.features {
+    margin-bottom: 3rem;
+}
+
+.feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.feature-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.feature-icon i {
+    font-size: 1.25rem;
+}
+
+.feature-text h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.feature-text p {
+    opacity: 0.8;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Stats */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-light);
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .auth-panel {
+        display: none;
+    }
+    
+    .auth-card {
+        max-width: 100%;
+        margin: 2rem;
+        border-radius: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .auth-card {
+        margin: 1rem;
+        padding: 2rem 1.5rem;
+    }
+    
+    .auth-header h1 {
+        font-size: 1.75rem;
+    }
+    
+    .panel-content h2 {
+        font-size: 2rem;
+    }
+    
+    .stats {
+        gap: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 1.25rem;
+    }
+    
+    .form-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializePasswordToggle();
+    initializeFormSubmission();
+});
+
+function initializePasswordToggle() {
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.type === 'password' ? 'text' : 'password';
+        passwordInput.type = type;
+        
+        const icon = this.querySelector('i');
+        icon.className = type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+    });
+}
+
+function initializeFormSubmission() {
+    const form = document.querySelector('.auth-form');
+    const loginBtn = document.querySelector('.btn-primary');
+    
+    form.addEventListener('submit', function(e) {
+        loginBtn.classList.add('loading');
+        loginBtn.disabled = true;
+    });
+}
+
+// Demo login functionality
+document.getElementById('demoLogin').addEventListener('click', function() {
+    // You can implement demo login logic here
+    console.log('Demo login clicked');
+});
+</script>
+{% endblock %}

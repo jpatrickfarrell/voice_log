@@ -1,0 +1,1151 @@
+{
+    "application_architecture": {
+      "name": "Flask Blueprint-Based Web Application",
+      "description": "A comprehensive guide for building Flask applications using blueprints, SQLite database, Docker containerization, and modern web development patterns",
+      "version": "1.0.0",
+      "framework": "Flask",
+      "python_version": "3.11+",
+      "database": "SQLite",
+      "authentication": "Flask-Login",
+      "deployment": "Docker + Docker Compose"
+    },
+    "folder_structure": {
+      "root_directory": {
+        "description": "Main project directory containing all application files",
+        "structure": {
+          "app/": "Main Flask application package",
+          "static/": "Static assets (CSS, JS, images, icons)",
+          "templates/": "HTML templates using Jinja2",
+          "data/": "Persistent data storage (database, receipts, logs, cache)",
+          "uploads/": "File upload storage",
+          "backups/": "Application backup files",
+          "logs/": "Application log files",
+          "cache/": "Cache files",
+          "config/": "Configuration files and schemas",
+          "tools/": "Utility scripts and migration tools",
+          "scripts/": "Build and setup scripts",
+          "docs/": "Documentation files",
+          "tests/": "Test files",
+          "venv/": "Python virtual environment (not in git)"
+        }
+      },
+      "app_directory": {
+        "description": "Core Flask application package using factory pattern",
+        "structure": {
+          "__init__.py": "Application factory and blueprint registration",
+          "extensions.py": "Flask extensions initialization (LoginManager, Database)",
+          "blueprints/": "Feature-based route organization",
+          "models/": "Data models and business logic",
+          "services/": "Business logic and external integrations"
+        }
+      },
+      "blueprints_directory": {
+        "description": "Feature-based route organization using Flask blueprints",
+        "structure": {
+          "__init__.py": "Blueprint package initialization",
+          "main.py": "Main routes (dashboard, homepage)",
+          "auth.py": "Authentication routes (login, logout, register)",
+          "admin.py": "Administrative functions",
+          "api.py": "REST API endpoints",
+          "expenses.py": "Expense management",
+          "receipts.py": "Receipt handling",
+          "notes.py": "Note management",
+          "payment_methods.py": "Payment method management",
+          "reports.py": "Reporting and analytics"
+        }
+      },
+      "models_directory": {
+        "description": "Data models representing database entities",
+        "structure": {
+          "__init__.py": "Models package initialization",
+          "user.py": "User model with Flask-Login integration",
+          "expense.py": "Expense entity model",
+          "category.py": "Category classification model",
+          "receipt.py": "Receipt file model",
+          "payment_method.py": "Payment method model",
+          "expense_note.py": "Expense note model"
+        }
+      },
+      "services_directory": {
+        "description": "Business logic and external service integrations",
+        "structure": {
+          "__init__.py": "Services package initialization",
+          "database.py": "Database operations and utilities",
+          "auth_service.py": "Authentication business logic",
+          "config_service.py": "Configuration management",
+          "file_service.py": "File handling and storage",
+          "google_drive_service.py": "External service integration example"
+        }
+      }
+    },
+    "makefile_patterns": {
+      "description": "Comprehensive Makefile for development and deployment operations",
+      "targets": {
+        "docker_management": {
+          "build": "Build Docker image",
+          "up": "Start application with docker compose",
+          "down": "Stop and remove containers",
+          "restart": "Restart application",
+          "logs": "Show application logs",
+          "shell": "Open shell in running container",
+          "clean": "Remove containers and images",
+          "status": "Show container status"
+        },
+        "database_operations": {
+          "init-db": "Initialize database with tables and sample data",
+          "migrate": "Run database migrations",
+          "backup": "Create application backup",
+          "restore": "Restore from backup"
+        },
+        "development_setup": {
+          "native-init": "Set up native development environment",
+          "native-run": "Run application natively",
+          "install-dependencies": "Install additional dependencies"
+        },
+        "configuration": {
+          "config-native": "Configure for native deployment",
+          "config-docker": "Configure for Docker deployment",
+          "config-status": "Show current configuration"
+        },
+        "logging": {
+          "log-debug": "Set log level to DEBUG",
+          "log-info": "Set log level to INFO",
+          "log-warning": "Set log level to WARNING",
+          "log-error": "Set log level to ERROR"
+        }
+      },
+      "best_practices": [
+        "Use .PHONY for all targets",
+        "Group related targets with comments",
+        "Provide helpful help target with usage examples",
+        "Include both Docker and native development targets",
+        "Use variables for common values (IMAGE_NAME, CONTAINER_NAME)",
+        "Provide status and information targets"
+      ]
+    },
+    "docker_configuration": {
+      "dockerfile": {
+        "description": "Multi-stage Dockerfile for production-ready Python application",
+        "base_image": "python:3.11-slim",
+        "environment_variables": [
+          "PYTHONDONTWRITEBYTECODE=1",
+          "PYTHONUNBUFFERED=1",
+          "FLASK_APP=simple_app.py",
+          "FLASK_CONFIG=production"
+        ],
+        "system_dependencies": ["gcc", "curl"],
+        "security_features": [
+          "Non-root user creation",
+          "Proper file permissions",
+          "Minimal base image"
+        ],
+        "health_check": "HTTP endpoint health check with curl",
+        "exposed_port": 5010
+      },
+      "docker_compose": {
+        "description": "Multi-service Docker Compose configuration",
+        "services": {
+          "main_app": {
+            "build_context": ".",
+            "container_name": "expense-tracker",
+            "restart_policy": "unless-stopped",
+            "port_mapping": "${HOST_PORT:-5010}:5010"
+          }
+        },
+        "volumes": {
+          "data_persistence": "./data:/app/data",
+          "uploads": "./uploads:/app/uploads"
+        },
+        "networks": {
+          "custom_network": "expense-network (bridge driver)",
+          "default_network": "expense_tracker_default"
+        },
+        "environment": {
+          "env_file": ".env",
+          "path_mapping": "Host and container path synchronization"
+        },
+        "health_check": {
+          "test": "HTTP endpoint check",
+          "interval": "30s",
+          "timeout": "10s",
+          "retries": 3,
+          "start_period": "40s"
+        }
+      }
+    },
+    "flask_application_patterns": {
+      "application_factory": {
+        "description": "Factory pattern for creating Flask application instances",
+        "file": "app/__init__.py",
+        "function": "create_app(config_object=None)",
+        "benefits": [
+          "Multiple application instances",
+          "Testing configuration",
+          "Environment-specific settings"
+        ],
+        "initialization_steps": [
+          "Load configuration",
+          "Initialize extensions",
+          "Register blueprints",
+          "Set up error handlers",
+          "Configure context processors"
+        ]
+      },
+      "blueprint_registration": {
+        "description": "Feature-based route organization using Flask blueprints",
+        "pattern": "app.register_blueprint(blueprint, url_prefix='/prefix')",
+        "benefits": [
+          "Modular code organization",
+          "Reusable components",
+          "Clear separation of concerns",
+          "Easier testing and maintenance"
+        ],
+        "blueprint_structure": {
+          "routes": "HTTP endpoint definitions",
+          "templates": "Blueprint-specific templates",
+          "static": "Blueprint-specific static files",
+          "models": "Blueprint-specific data models"
+        }
+      },
+      "extensions_management": {
+        "description": "Centralized Flask extension initialization",
+        "file": "app/extensions.py",
+        "extensions": {
+          "login_manager": "Flask-Login for user authentication",
+          "database": "Database connection management",
+          "csrf": "Cross-site request forgery protection",
+          "mail": "Email functionality (if needed)"
+        }
+      }
+    },
+    "authentication_system": {
+      "description": "User authentication using Flask-Login and SQLite",
+      "components": {
+        "user_model": {
+          "file": "app/models/user.py",
+          "inheritance": "flask_login.UserMixin",
+          "required_methods": [
+            "is_authenticated",
+            "is_active",
+            "is_anonymous",
+            "get_id"
+          ],
+          "properties": [
+            "id",
+            "username",
+            "email",
+            "is_admin",
+            "is_active"
+          ]
+        },
+        "login_manager": {
+          "file": "app/extensions.py",
+          "configuration": {
+            "login_view": "auth.login",
+            "user_loader": "load_user function"
+          },
+          "user_loader_function": {
+            "purpose": "Load user from database by ID",
+            "return": "User object or None"
+          }
+        },
+        "authentication_routes": {
+          "file": "app/blueprints/auth.py",
+          "endpoints": {
+            "/login": "User login (GET/POST)",
+            "/register": "User registration (GET/POST)",
+            "/logout": "User logout"
+          },
+          "security_features": [
+            "Password hashing with werkzeug.security",
+            "CSRF protection",
+            "Session management",
+            "User input validation"
+          ]
+        }
+      },
+      "database_schema": {
+        "users_table": {
+          "columns": [
+            "id (INTEGER PRIMARY KEY)",
+            "username (TEXT UNIQUE)",
+            "email (TEXT UNIQUE)",
+            "password_hash (TEXT)",
+            "is_admin (BOOLEAN)",
+            "is_active (BOOLEAN)",
+            "created_at (TIMESTAMP)",
+            "updated_at (TIMESTAMP)"
+          ],
+          "indexes": [
+            "username index",
+            "email index"
+          ]
+        }
+      },
+      "security_best_practices": [
+        "Password hashing with salt",
+        "Session timeout configuration",
+        "CSRF token validation",
+        "Input sanitization",
+        "SQL injection prevention",
+        "Secure cookie settings"
+      ]
+    },
+    "database_architecture": {
+      "description": "SQLite database with service layer abstraction",
+      "database_service": {
+        "file": "app/services/database.py",
+        "functions": {
+          "get_db()": "Get database connection with row factory",
+          "init_database()": "Initialize database tables and sample data",
+          "check_database_health()": "Database health check",
+          "handle_database_error()": "Error handling and logging"
+        }
+      },
+      "connection_management": {
+        "pattern": "Context manager or explicit close",
+        "row_factory": "sqlite3.Row for dictionary-like access",
+        "error_handling": "Try-catch with proper logging"
+      },
+      "table_structure": {
+        "users": "User authentication and profile data",
+        "categories": "Expense categorization",
+        "expenses": "Main expense records",
+        "receipts": "Receipt file metadata",
+        "expense_notes": "Additional expense information",
+        "payment_methods": "Payment method definitions"
+      },
+      "migration_system": {
+        "description": "Database schema evolution management",
+        "location": "tools/ directory",
+        "migration_files": [
+          "migrate_payment_methods.py",
+          "migrate_expense_notes.py",
+          "migrate_add_time.py",
+          "migrate_add_merchant_descriptor.py"
+        ],
+        "best_practices": [
+          "Version-controlled schema changes",
+          "Backward compatibility",
+          "Data validation",
+          "Rollback procedures"
+        ]
+      }
+    },
+    "configuration_management": {
+      "description": "Environment-based configuration system",
+      "configuration_files": {
+        "env.example": "Template for environment variables",
+        ".env": "Local environment configuration (not in git)",
+        "config/schema.json": "Configuration validation schema"
+      },
+      "environment_variables": {
+        "flask": [
+          "FLASK_CONFIG",
+          "FLASK_DEBUG",
+          "SECRET_KEY"
+        ],
+        "database": [
+          "DATABASE_URL",
+          "DATABASE_PATH"
+        ],
+        "server": [
+          "HOST",
+          "PORT",
+          "HOST_PORT"
+        ],
+        "file_storage": [
+          "RECEIPTS_FOLDER",
+          "UPLOAD_FOLDER",
+          "CACHE_FOLDER"
+        ],
+        "security": [
+          "SESSION_COOKIE_SECURE",
+          "SESSION_COOKIE_HTTPONLY",
+          "SESSION_COOKIE_SAMESITE"
+        ]
+      },
+      "configuration_service": {
+        "file": "app/services/config_service.py",
+        "features": [
+          "Environment variable loading",
+          "Configuration validation",
+          "Default value fallbacks",
+          "Configuration injection into templates"
+        ]
+      }
+    },
+    "static_assets_management": {
+      "description": "Static file organization and serving",
+      "static_directory": {
+        "css/": "Stylesheets",
+        "js/": "JavaScript files",
+        "icons/": "Application icons (multiple sizes)",
+        "images/": "General images"
+      },
+      "icon_sizes": [
+        "72x72", "96x96", "128x128", "144x144",
+        "152x152", "167x167", "180x180", "192x192",
+        "384x384", "512x512"
+      ],
+      "progressive_web_app": {
+        "manifest.json": "PWA configuration",
+        "sw.js": "Service worker",
+        "browserconfig.xml": "Browser configuration"
+      }
+    },
+    "template_system": {
+      "description": "Jinja2 template inheritance and organization",
+      "base_templates": {
+        "base.html": "Main layout template",
+        "base_app.html": "Application-specific base template"
+      },
+      "template_inheritance": {
+        "pattern": "{% extends 'base.html' %}",
+        "blocks": [
+          "title",
+          "content",
+          "scripts",
+          "styles"
+        ]
+      },
+      "context_processors": {
+        "utility_processor": "Common utility functions",
+        "inject_config": "Configuration injection",
+        "inject_current_year": "Dynamic year injection"
+      }
+    },
+    "development_workflow": {
+      "setup_commands": {
+        "native_development": "make native-init",
+        "docker_development": "make build && make up",
+        "database_initialization": "make init-db"
+      },
+      "testing": {
+        "test_files": "tests/ directory",
+        "test_app.py": "Application testing",
+        "test_config.py": "Configuration testing"
+      },
+      "logging": {
+        "log_levels": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        "log_file": "data/logs/app.log",
+        "log_rotation": "Size-based rotation"
+      }
+    },
+    "deployment_patterns": {
+      "development": {
+        "native": "Python virtual environment with Flask development server",
+        "docker": "Docker Compose with volume mounting for development"
+      },
+      "production": {
+        "docker": "Production Docker image with proper security",
+        "environment": "Production environment variables",
+        "logging": "Production logging configuration"
+      },
+      "backup_system": {
+        "description": "Comprehensive backup and restore functionality",
+        "backup_types": [
+          "Database backup",
+          "File backup",
+          "Full application backup"
+        ],
+        "backup_tools": "tools/backup_data.py",
+        "restore_procedures": "Backup restoration with validation"
+      }
+    },
+    "best_practices": {
+      "code_organization": [
+        "Use blueprints for feature separation",
+        "Keep models lightweight",
+        "Implement service layer for business logic",
+        "Use configuration service for settings"
+      ],
+      "security": [
+        "Hash passwords with salt",
+        "Validate all user inputs",
+        "Use CSRF protection",
+        "Implement proper session management",
+        "Secure file uploads"
+      ],
+      "database": [
+        "Use parameterized queries",
+        "Implement proper error handling",
+        "Use transactions for data integrity",
+        "Regular database backups"
+      ],
+      "deployment": [
+        "Use environment variables for configuration",
+        "Implement health checks",
+        "Use non-root containers",
+        "Proper volume mounting",
+        "Logging and monitoring"
+      ]
+    },
+    "common_extensions": {
+      "authentication": "Flask-Login",
+      "forms": "Flask-WTF",
+      "database": "Flask-SQLAlchemy (optional)",
+      "email": "Flask-Mail",
+      "caching": "Flask-Caching",
+      "sessions": "Flask-Session"
+    },
+    "file_upload_handling": {
+      "description": "Secure file upload system with validation",
+      "security_features": [
+        "File type validation",
+        "File size limits",
+        "Secure filename handling",
+        "Virus scanning (if implemented)"
+      ],
+      "supported_formats": [
+        "Images: PNG, JPG, JPEG, GIF, HEIC, HEIF",
+        "Documents: PDF",
+        "Maximum size: 16MB (configurable)"
+      ],
+      "storage_strategy": {
+        "receipts": "data/receipts/",
+        "uploads": "uploads/",
+        "backups": "backups/"
+      }
+    },
+    "api_design": {
+      "description": "RESTful API endpoints for external integrations",
+      "blueprint": "app/blueprints/api.py",
+      "endpoints": [
+        "GET /api/expenses",
+        "POST /api/expenses",
+        "GET /api/expenses/<id>",
+        "PUT /api/expenses/<id>",
+        "DELETE /api/expenses/<id>"
+      ],
+      "response_format": "JSON",
+      "authentication": "Session-based or token-based",
+      "error_handling": "Standard HTTP status codes"
+    },
+    "ui_ux_design": {
+      "description": "Modern, clean dashboard design with emphasis on readability and visual hierarchy",
+      "design_system": {
+        "color_palette": {
+          "primary": {
+            "main": "#8B5CF6",
+            "light": "#A78BFA",
+            "dark": "#7C3AED"
+          },
+          "secondary": {
+            "blue": "#3B82F6",
+            "green": "#10B981",
+            "purple": "#8B5CF6",
+            "orange": "#F59E0B"
+          },
+          "background": {
+            "main": "#FFFFFF",
+            "secondary": "#F8FAFC",
+            "sidebar": "#F1F5F9"
+          },
+          "text": {
+            "primary": "#1E293B",
+            "secondary": "#64748B",
+            "muted": "#94A3B8"
+          },
+          "borders": {
+            "light": "#E2E8F0",
+            "medium": "#CBD5E1"
+          }
+        },
+        "typography": {
+          "font_family": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "font_weights": {
+            "light": 300,
+            "normal": 400,
+            "medium": 500,
+            "semibold": 600,
+            "bold": 700
+          },
+          "font_sizes": {
+            "xs": "0.75rem",
+            "sm": "0.875rem",
+            "base": "1rem",
+            "lg": "1.125rem",
+            "xl": "1.25rem",
+            "2xl": "1.5rem",
+            "3xl": "1.875rem",
+            "4xl": "2.25rem"
+          }
+        },
+        "spacing": {
+          "xs": "0.25rem",
+          "sm": "0.5rem",
+          "md": "1rem",
+          "lg": "1.5rem",
+          "xl": "2rem",
+          "2xl": "3rem",
+          "3xl": "4rem"
+        },
+        "border_radius": {
+          "sm": "0.375rem",
+          "md": "0.5rem",
+          "lg": "0.75rem",
+          "xl": "1rem",
+          "full": "9999px"
+        }
+      },
+      "layout_structure": {
+        "header": {
+          "height": "80px",
+          "background": "#FFFFFF",
+          "border_bottom": "1px solid #E2E8F0",
+          "padding": "0 2rem",
+          "display": "flex",
+          "align_items": "center",
+          "justify_content": "space-between",
+          "position": "sticky",
+          "top": "0",
+          "z_index": "50",
+          "drop_shadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
+        },
+        "header_left": {
+          "search_bar": {
+            "width": "400px",
+            "height": "44px",
+            "background": "#FFFFFF",
+            "border": "1px solid #D1D5DB",
+            "border_radius": "0.75rem",
+            "padding": "0 1rem",
+            "display": "flex",
+            "align_items": "center",
+            "gap": "0.75rem",
+            "drop_shadow": "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
+          }
+        },
+        "header_right": {
+          "display": "flex",
+          "align_items": "center",
+          "gap": "1.5rem",
+          "user_profile": {
+            "display": "flex",
+            "align_items": "center",
+            "gap": "0.75rem",
+            "padding": "0.5rem 1rem",
+            "border_radius": "0.5rem",
+            "hover_background": "#F1F5F9"
+          }
+        },
+        "main_content": {
+          "padding": "2rem",
+          "max_width": "none",
+          "margin": "0",
+          "background": "#F8FAFC"
+        },
+        "content_container": {
+          "max_width": "1400px",
+          "margin": "0 auto",
+          "padding": "0 1rem"
+        },
+        "sidebar": {
+          "width": "280px",
+          "background": "#F1F5F9",
+          "border_right": "1px solid #E2E8F0",
+          "padding": "1rem 0",
+          "brand_section": {
+            "padding": "1.5rem 1rem 1rem 1rem",
+            "border_bottom": "1px solid #E2E8F0",
+            "margin_bottom": "0.5rem",
+            "title_size": "1.125rem",
+            "title_weight": "700"
+          },
+          "navigation": {
+            "padding": "0 1rem",
+            "margin_top": "0.5rem",
+            "gap": "0.125rem",
+            "item_design": {
+              "padding": "0.75rem 1rem",
+              "border_radius": "0.75rem",
+              "min_height": "44px",
+              "transition": "all 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+              "icon_size": "18px",
+              "icon_margin": "0.75rem",
+              "font_size": "0.875rem",
+              "font_weight": "500"
+            },
+            "states": {
+              "hover": {
+                "background": "rgba(148, 163, 184, 0.1)",
+                "transform": "translateX(2px)"
+              },
+              "active": {
+                "color": "#8B5CF6",
+                "background": "rgba(139, 92, 246, 0.1)",
+                "font_weight": "600",
+                "left_indicator": {
+                  "width": "3px",
+                  "height": "20px",
+                  "background": "#8B5CF6",
+                  "border_radius": "0 2px 2px 0"
+                }
+              }
+            }
+          }
+        },
+        "page_header": {
+          "margin_bottom": "2rem",
+          "title": {
+            "font_size": "1.875rem",
+            "font_weight": "700",
+            "color": "#1E293B",
+            "margin_bottom": "0.25rem"
+          },
+          "subtitle": {
+            "font_size": "1rem",
+            "color": "#64748B",
+            "font_weight": "400"
+          }
+        }
+      },
+      "component_design": {
+        "cards": {
+          "background": "#FFFFFF",
+          "border": "1px solid #E2E8F0",
+          "border_radius": "0.75rem",
+          "padding": "1.5rem",
+          "drop_shadow": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+          "hover_shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+          "margin_bottom": "1.5rem",
+          "header_padding": "1rem 1.5rem",
+          "header_min_height": "auto"
+        },
+        "statistics_cards": {
+          "grid_layout": "grid-cols-4 gap-6",
+          "card_height": "80px",
+          "card_padding": "1rem",
+          "layout_type": "horizontal_header",
+          "header_layout": {
+            "display": "flex",
+            "align_items": "center",
+            "gap": "0.5rem",
+            "margin_bottom": "0.5rem"
+          },
+          "icon_size": "20px",
+          "value_size": "1.5rem",
+          "value_line_height": "1.2",
+          "label_size": "0.75rem",
+          "label_weight": "500",
+          "label_position": "next_to_icon",
+          "margin_bottom": "2rem",
+          "icon_colors": {
+            "pending_clients": "#F59E0B",
+            "active_tasks": "#3B82F6",
+            "recent_episodes": "#8B5CF6",
+            "notifications": "#10B981"
+          }
+        },
+        "panels": {
+          "background": "#FFFFFF",
+          "border": "1px solid #E2E8F0",
+          "border_radius": "0.75rem",
+          "padding": "1.5rem",
+          "drop_shadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+          "margin_bottom": "2rem",
+          "header": {
+            "font_size": "1.125rem",
+            "font_weight": "600",
+            "margin_bottom": "1.5rem",
+            "display": "flex",
+            "align_items": "center",
+            "justify_content": "space-between",
+            "gap": "0.5rem"
+          }
+        },
+        "buttons": {
+          "primary": {
+            "background": "#8B5CF6",
+            "text_color": "#FFFFFF",
+            "border_radius": "0.5rem",
+            "padding": "0.75rem 1.5rem",
+            "font_weight": "500",
+            "drop_shadow": "0 4px 6px -1px rgba(139, 92, 246, 0.3)",
+            "hover_shadow": "0 10px 15px -3px rgba(139, 92, 246, 0.4)"
+          },
+          "secondary": {
+            "background": "#F1F5F9",
+            "text_color": "#374151",
+            "border": "1px solid #D1D5DB",
+            "border_radius": "0.5rem",
+            "padding": "0.75rem 1.5rem",
+            "font_weight": "500"
+          },
+          "danger": {
+            "background": "#EF4444",
+            "text_color": "#FFFFFF",
+            "border_radius": "0.5rem",
+            "padding": "0.75rem 1.5rem",
+            "font_weight": "500",
+            "drop_shadow": "0 4px 6px -1px rgba(239, 68, 68, 0.3)"
+          },
+          "success": {
+            "background": "#10B981",
+            "text_color": "#FFFFFF",
+            "border_radius": "0.5rem",
+            "padding": "0.75rem 1.5rem",
+            "font_weight": "500",
+            "drop_shadow": "0 4px 6px -1px rgba(16, 185, 129, 0.3)"
+          }
+        },
+        "tables": {
+          "design_system": "professional_with_clear_hierarchy",
+          "background": "#FFFFFF",
+          "border_radius": "0.75rem",
+          "drop_shadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+          "header": {
+            "background": "#F8FAFC",
+            "border_bottom": "2px solid #CBD5E1",
+            "text_color": "#1E293B",
+            "font_weight": "600",
+            "font_size": "0.875rem",
+            "padding": "1rem 1.5rem",
+            "text_transform": "none",
+            "column_separators": {
+              "width": "1px",
+              "color": "#E2E8F0",
+              "position": "right_edge_except_last"
+            }
+          },
+          "body": {
+            "cell_padding": "1rem 1.5rem",
+            "border_bottom": "1px solid #E2E8F0",
+            "vertical_align": "middle",
+            "row_hover": {
+              "background": "rgba(139, 92, 246, 0.05)",
+              "transform": "translateY(-1px)",
+              "transition": "all 0.15s ease-in-out"
+            }
+          },
+          "action_buttons": {
+            "size": "small",
+            "design": "square",
+            "padding": "0 (no padding)",
+            "font_size": "0.875rem",
+            "width": "32px",
+            "height": "32px",
+            "min_width": "32px",
+            "gap": "0.375rem",
+            "alignment": "center",
+            "border_radius": "0.5rem"
+          },
+          "badges": {
+            "font_size": "0.75rem",
+            "padding": "0.25rem 0.5rem"
+          }
+        },
+        "action_links": {
+          "view_all": {
+            "color": "#8B5CF6",
+            "font_weight": "500",
+            "text_decoration": "none",
+            "hover_color": "#7C3AED",
+            "font_size": "0.875rem"
+          },
+          "new_button": {
+            "background": "#10B981",
+            "color": "#FFFFFF",
+            "padding": "0.5rem 1rem",
+            "border_radius": "0.5rem",
+            "font_weight": "500",
+            "font_size": "0.875rem",
+            "line_height": "1.4",
+            "text_decoration": "none",
+            "display": "inline-flex",
+            "align_items": "center",
+            "gap": "0.5rem",
+            "drop_shadow": "0 4px 6px -1px rgba(16, 185, 129, 0.3)"
+          }
+        }
+      },
+      "grid_layouts": {
+        "statistics_row": {
+          "display": "grid",
+          "grid_template_columns": "repeat(4, 1fr)",
+          "gap": "2rem",
+          "margin_bottom": "3rem"
+        },
+        "content_sections": {
+          "display": "grid",
+          "grid_template_columns": "repeat(2, 1fr)",
+          "gap": "1.5rem",
+          "margin_bottom": "2rem"
+        },
+        "responsive_breakpoints": {
+          "lg": {
+            "statistics_row": "grid-cols-4 gap-8",
+            "content_sections": "grid-cols-2 gap-6"
+          },
+          "md": {
+            "statistics_row": "grid-cols-2 gap-6",
+            "content_sections": "grid-cols-1 gap-4"
+          },
+          "sm": {
+            "statistics_row": "grid-cols-1 gap-4",
+            "content_sections": "grid-cols-1 gap-4"
+          }
+        }
+      },
+      "visual_elements": {
+        "drop_shadows": {
+          "sm": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+          "md": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+          "lg": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+          "xl": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+          "colored": {
+            "primary": "0 4px 6px -1px rgba(139, 92, 246, 0.3)",
+            "blue": "0 4px 6px -1px rgba(59, 130, 246, 0.3)",
+            "green": "0 4px 6px -1px rgba(16, 185, 129, 0.3)",
+            "red": "0 4px 6px -1px rgba(239, 68, 68, 0.3)"
+          }
+        },
+        "icons": {
+          "style": "outlined, consistent stroke width",
+          "sizes": {
+            "sm": "16px",
+            "md": "20px",
+            "lg": "24px",
+            "xl": "32px"
+          },
+          "colors": "Semantic color mapping (blue for info, green for success, etc.)"
+        },
+        "dividers": {
+          "color": "#E2E8F0",
+          "thickness": "1px",
+          "margin": "1rem 0"
+        }
+      },
+      "interaction_states": {
+        "hover": {
+          "cards": "Lift effect with increased shadow",
+          "buttons": "Scale transform (1.02) and shadow increase",
+          "navigation": "Background color change and subtle shadow"
+        },
+        "active": {
+          "buttons": "Scale transform (0.98) and shadow decrease",
+          "cards": "Shadow reduction for pressed effect"
+        },
+        "focus": {
+          "outline": "2px solid #8B5CF6",
+          "outline_offset": "2px"
+        }
+      },
+      "responsive_design": {
+        "breakpoints": {
+          "sm": "640px",
+          "md": "768px",
+          "lg": "1024px",
+          "xl": "1280px",
+          "2xl": "1536px"
+        },
+        "mobile_adaptations": {
+          "sidebar": "Collapsible or bottom navigation",
+          "statistics_grid": "Single column layout",
+          "card_padding": "Reduced to 1rem"
+        }
+      },
+      "accessibility": {
+        "color_contrast": "WCAG AA compliant (4.5:1 ratio)",
+        "focus_indicators": "Visible focus states for keyboard navigation",
+        "screen_reader": "Proper ARIA labels and semantic HTML",
+        "touch_targets": "Minimum 44px for interactive elements"
+      },
+      "layout_spacing_guidelines": {
+        "dashboard_cards": {
+          "description": "Cards below statistics should have proper spacing to prevent visual crowding",
+          "margin_bottom": "1.5rem",
+          "gap_between_sections": "1.5rem"
+        },
+        "statistics_compactness": {
+          "description": "Statistics cards should be compact with labels positioned next to icons for better space utilization",
+          "max_height": "80px",
+          "padding": "1rem",
+          "icon_size": "20px (not 24px or 32px)",
+          "value_font_size": "1.5rem (not 1.75rem or 2.5rem)",
+          "label_layout": "horizontal next to icon, not below value",
+          "structure": "header (icon + label), then value below"
+        },
+        "page_headers": {
+          "description": "Page headers should be condensed and sized appropriately to not dominate the page",
+          "title_max_size": "1.875rem",
+          "subtitle_max_size": "1rem",
+          "title_margin_bottom": "0.125rem (condensed spacing between title and subtitle)",
+          "subtitle_margin_bottom": "0 (no extra margin)",
+          "section_margin_bottom": "2rem (not 3rem)",
+          "button_alignment": "Use align-items-center to prevent button height expansion",
+          "layout": "d-flex justify-content-between align-items-center for proper button sizing"
+        },
+        "card_header_spacing": {
+          "description": "Card headers should have minimal padding to reduce excessive whitespace above buttons",
+          "padding": "1rem 1.5rem (not 1.5rem all around)",
+          "min_height": "auto (not fixed height)",
+          "button_positioning": "top right corner with proper flex alignment"
+        },
+        "sidebar_design": {
+          "description": "Sidebar navigation should be world-class with perfect alignment and sleek interactions",
+          "alignment": "Icons and text must be perfectly centered in highlighted areas",
+          "spacing": "Minimal gaps between navigation items (0.125rem)",
+          "brand_section": "Clear brand area at top with proper separation",
+          "hover_effects": "Subtle slide animation (translateX(2px)) and background change",
+          "active_state": "Left indicator line with primary color background",
+          "icon_alignment": "Icons centered in 18px container with flex alignment"
+        },
+        "page_layout": {
+          "description": "All pages should use the full available width within the content container",
+          "structure": "Remove Bootstrap row/col grid and use direct content containers",
+          "page_header": "Use page-header class with title/subtitle and action buttons",
+          "content_width": "Full container width (1400px max) with proper padding",
+          "card_layout": "Single full-width card for main content area"
+        },
+        "table_requirements": {
+          "description": "Tables must follow professional design standards",
+          "header_visibility": "Clear background color and bold separator line",
+          "hover_states": "Required for all table rows with subtle color and lift",
+          "button_spacing": "Action buttons must not touch - proper gap required",
+          "button_sizing": "Square buttons (26x26px) with no padding for table context",
+          "column_separation": "Subtle vertical lines between header columns",
+          "card_integration": "Tables should fill full card width - no card padding when table present"
+        },
+        "button_refinements": {
+          "description": "Button styling refinements for better visual hierarchy",
+          "table_buttons": "Must be perfectly square (26x26px) with zero padding and small radius",
+          "primary_buttons": "Use btn-primary class with compact padding (0.375rem 0.875rem) consistently",
+          "icon_buttons": "Square design with centered icons for clean table appearance",
+          "consistency": "All primary action buttons (Add Client, New Episode, etc.) use same btn-primary styling"
+        },
+        "compact_rows": {
+          "description": "Ultra-compact table row design for maximum information density",
+          "header_padding": "Table headers use 0.625rem vertical, 1.25rem horizontal padding",
+          "cell_padding": "Table cells use 0.5rem vertical, 1.25rem horizontal padding",
+          "button_size": "Table action buttons are 26x26px for proportional row height",
+          "button_spacing": "Action button gap reduced to 0.25rem for tighter layout",
+          "visual_hierarchy": "Maintains readability while maximizing information density"
+        },
+        "header_system": {
+          "description": "Modern, mobile-first header design with standardized best practices",
+          "structure": {
+            "container": "Single header-container with flex layout and responsive padding",
+            "mobile_toggle": "Mobile menu toggle visible below 1024px, hamburger/X icon with proper responsive visibility",
+            "brand": "Logo icon + text (text hidden on mobile), primary color accent",
+            "search": "Centered search with icon, clear button, hidden on mobile, proper padding to prevent overlap",
+            "actions": "Right-aligned action buttons with consistent sizing"
+          },
+          "responsive_design": {
+            "mobile": "Brand text hidden, search hidden, user name hidden, compact spacing, mobile toggle visible",
+            "tablet": "Search visible, user name visible, increased padding, mobile toggle visible",
+            "desktop": "All elements visible, maximum padding and spacing, mobile toggle hidden"
+          },
+          "mobile_menu_toggle": {
+            "visibility": "Hidden on desktop (1024px+), visible on tablet and mobile (<1024px)",
+            "functionality": "Toggles sidebar visibility with icon change (hamburger ↔ X)",
+            "positioning": "Order: -1 to appear first, 40x40px touch target",
+            "icons": "bi-list (closed state), bi-x (open state)",
+            "interaction": "Click to toggle, outside click to close, proper cleanup on close"
+          },
+          "components": {
+            "action_buttons": "40x40px square buttons with hover states and proper spacing",
+            "search_input": "Proper padding (2.5rem left, 2.75rem right) to prevent icon overlay",
+            "dropdowns": "Modern card design with defined borders and shadows",
+            "notification_badge": "Positioned badge with count, red background"
+          },
+          "dropdown_styling": {
+            "outer_container": "2px border, enhanced shadow, border-radius-lg",
+            "notifications": "Inner container with secondary background, individual notification cards",
+            "user_menu": "Single cohesive card with profile info and logout button integrated",
+            "visual_hierarchy": "Clear boundaries, no blending with background, professional appearance"
+          },
+          "accessibility": {
+            "aria_labels": "All interactive elements have proper ARIA labels",
+            "focus_states": "Visible focus indicators with primary color",
+            "touch_targets": "Minimum 40px touch targets for mobile",
+            "keyboard_navigation": "Full keyboard support for all interactions",
+            "responsive_behavior": "Proper show/hide logic for different screen sizes"
+          }
+        },
+        "client_profile_page": {
+          "description": "Professional client profile page with modern layout and components",
+          "page_structure": {
+            "header": "Standard page-header with title, subtitle, and action buttons in top right",
+            "client_info": "Dedicated client-info-card with avatar, details, and social media links",
+            "statistics": "Uses existing stats-grid pattern for episode statistics",
+            "content_layout": "Two-column grid (main content + sidebar) with proper responsive behavior"
+          },
+          "client_header": {
+            "layout": "Flex layout with avatar (4rem icon) and client details",
+            "avatar": "Large primary-colored person-circle icon (4rem)",
+            "name_hierarchy": "Large client name (1.75rem) with smaller username (@handle)",
+            "contact_info": "Email and phone with proper dividers and spacing",
+            "meta_section": "Status badge, join date, website link with proper gap spacing"
+          },
+          "social_media_links": {
+            "design": "36x36px square buttons with rounded corners and brand colors",
+            "hover_effects": "Lift animation (translateY(-2px)) with subtle shadows",
+            "brand_colors": "Instagram (#E4405F), LinkedIn (#0A66C2), Spotify (#1DB954), Podcast (primary)",
+            "background_interaction": "Light brand-colored background on hover with matching border"
+          },
+          "content_grid": {
+            "desktop": "Two-column grid (1fr 300px) with 2rem gap",
+            "mobile": "Single column with 1.5rem gap",
+            "main_column": "Recent Episodes and Activity cards with 1.5rem vertical spacing",
+            "sidebar": "Send Task and Recent Uploads cards with consistent spacing"
+          },
+          "activity_items": {
+            "layout": "Icon + details + status badge with proper alignment",
+            "icon_design": "32x32px circle with primary background and centered icon",
+            "spacing": "1rem vertical padding with bottom border (except last item)",
+            "status_badges": "Custom badge colors for todo, in_progress, and done states"
+          },
+          "custom_select": {
+            "styling": "Custom dropdown with chevron icon and focus states",
+            "interaction": "Arrow rotation on focus, proper hover and focus colors",
+            "accessibility": "Maintains native select functionality with custom appearance"
+          },
+          "responsive_design": {
+            "breakpoint": "1024px for grid collapse to single column",
+            "mobile_adaptations": "Stack content vertically, maintain proper spacing",
+            "touch_targets": "All interactive elements meet 36px minimum requirements"
+          }
+        },
+        "form_pages": {
+          "description": "Modern full-width form design with sectioned layout",
+          "layout_structure": {
+            "header": "Standard page-header with title, subtitle, and action buttons",
+            "account_summary": "Read-only information grid showing existing account details",
+            "form_sections": "Two-column grid on desktop, single column on mobile",
+            "full_width_sections": "Important sections span full width (Additional Information)"
+          },
+          "account_summary": {
+            "design": "Grid layout with auto-fit columns (200px minimum width)",
+            "info_items": "Label-value pairs with proper typography hierarchy",
+            "readonly_styling": "Muted labels and visual indicators for non-editable content",
+            "client_id": "Monospace code styling with background and border"
+          },
+          "form_sections": {
+            "structure": "Card-based sections with headers and content areas",
+            "section_header": "Secondary background with title, icon, and subtitle",
+            "section_content": "Padded content area with form grid layout",
+            "responsive_grid": "2-column form grid collapsing to 1-column on mobile"
+          },
+          "form_styling": {
+            "form_controls": "Secondary background with focus states and proper padding",
+            "focus_states": "Primary color border with subtle shadow ring",
+            "social_icons": "Brand-colored icons in form labels for visual hierarchy",
+            "validation_states": "Success and error states with colored borders and feedback"
+          },
+          "responsive_design": {
+            "desktop": "Two-column section grid with full-width additional information",
+            "tablet": "Single column sections maintaining proper spacing",
+            "mobile": "Form grids collapse to single column, maintained touch targets"
+          },
+          "form_actions": {
+            "positioning": "Centered at bottom with top border separation",
+            "button_styling": "Primary button with increased padding and min-width",
+            "spacing": "Generous padding around action area for visual separation"
+          }
+        }
+      }
+    }
+  }
+  

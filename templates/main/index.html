@@ -1,0 +1,704 @@
+{% extends "base.html" %}
+
+{% block title %}Voice Log - Listenable Blog Posts{% endblock %}
+
+{% block head %}
+<meta name="description" content="Discover and share listenable blog posts. Transform your voice into engaging content with transcripts and summaries.">
+<meta property="og:title" content="Voice Log - Listenable Blog Posts">
+<meta property="og:description" content="Transform your voice into engaging blog posts with transcripts and summaries.">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="hero-gradient-bg">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="hero-title">Transform Your Voice Into <span class="text-gradient">Listenable</span> Blog Posts</h1>
+                    <p class="hero-subtitle">Record, transcribe, and publish voice notes instantly. Create engaging content with embedded audio, automatic transcriptions, and AI-generated summaries.</p>
+                    
+                    <div class="hero-actions">
+                        {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('posts.create_post') }}" class="btn btn-primary-gradient btn-lg">
+                                <i class="bi bi-plus-circle"></i> Create Your First Post
+                            </a>
+                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light btn-lg">
+                                <i class="bi bi-speedometer2"></i> Go to Dashboard
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary-gradient btn-lg">
+                                <i class="bi bi-person-plus"></i> Get Started Free
+                            </a>
+                            <a href="{{ url_for('main.discover') }}" class="btn btn-outline-light btn-lg">
+                                <i class="bi bi-compass"></i> Discover Posts
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="hero-demo">
+                        <div class="demo-card">
+                            <div class="demo-header">
+                                <i class="bi bi-mic-fill text-gradient"></i>
+                                <span>Voice Recording</span>
+                            </div>
+                            <div class="demo-waveform">
+                                <div class="waveform-bars">
+                                    <div class="bar" style="height: 20px;"></div>
+                                    <div class="bar" style="height: 35px;"></div>
+                                    <div class="bar" style="height: 15px;"></div>
+                                    <div class="bar" style="height: 45px;"></div>
+                                    <div class="bar" style="height: 25px;"></div>
+                                    <div class="bar" style="height: 30px;"></div>
+                                    <div class="bar" style="height: 40px;"></div>
+                                    <div class="bar" style="height: 20px;"></div>
+                                </div>
+                            </div>
+                            <div class="demo-features">
+                                <div class="feature-tag">Auto Transcript</div>
+                                <div class="feature-tag">AI Summary</div>
+                                <div class="feature-tag">Public Link</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="features-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="section-title">Why Voice Log?</h2>
+                <p class="section-subtitle">Everything you need to turn your voice into engaging content</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card gradient-card-blue">
+                    <div class="feature-icon">
+                        <i class="bi bi-mic"></i>
+                    </div>
+                    <h3>Record Anywhere</h3>
+                    <p>Upload audio from any device. Supports all major audio formats with automatic optimization for the web.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card gradient-card-purple">
+                    <div class="feature-icon">
+                        <i class="bi bi-file-text"></i>
+                    </div>
+                    <h3>Auto Transcription</h3>
+                    <p>AI-powered transcription turns your voice into searchable text with high accuracy using OpenAI Whisper.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card gradient-card-green">
+                    <div class="feature-icon">
+                        <i class="bi bi-lightning"></i>
+                    </div>
+                    <h3>Smart Summaries</h3>
+                    <p>Generate compelling summaries automatically to give your audience a preview of your content.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card gradient-card-orange">
+                    <div class="feature-icon">
+                        <i class="bi bi-link-45deg"></i>
+                    </div>
+                    <h3>Instant Publishing</h3>
+                    <p>Get a public permalink immediately. Share your voice posts anywhere with embedded audio players.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card gradient-card-pink">
+                    <div class="feature-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h3>Privacy Controls</h3>
+                    <p>Choose public, unlisted, or private posts. Control who can access your voice content.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card gradient-card-indigo">
+                    <div class="feature-icon">
+                        <i class="bi bi-phone"></i>
+                    </div>
+                    <h3>Mobile Optimized</h3>
+                    <p>Perfect for recording on your phone. Responsive design works seamlessly across all devices.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Posts Section -->
+{% if posts %}
+<div class="recent-posts-section">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title">Recent Voice Posts</h2>
+            <a href="{{ url_for('main.discover') }}" class="view-all-link">
+                View All <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+        
+        <div class="row g-4">
+            {% for post in posts[:6] %}
+            <div class="col-lg-4 col-md-6">
+                <div class="post-card">
+                    <div class="post-card-header">
+                        <div class="post-meta">
+                            <span class="author">{{ post.username or 'Anonymous' }}</span>
+                            <span class="date">{{ post.created_at }}</span>
+                        </div>
+                        <div class="post-duration">{{ post.format_duration() }}</div>
+                    </div>
+                    
+                    <div class="post-card-content">
+                        <h3 class="post-title">
+                            <a href="{{ url_for('posts.view_post', slug=post.slug) }}">{{ post.title }}</a>
+                        </h3>
+                        
+                        {% if post.summary %}
+                        <p class="post-summary">{{ post.summary[:120] }}{% if post.summary|length > 120 %}...{% endif %}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="post-card-footer">
+                        <div class="post-stats">
+                            <span class="stat">
+                                <i class="bi bi-eye"></i>
+                                {{ post.get_analytics()['view_count'] }}
+                            </span>
+                            <span class="stat">
+                                <i class="bi bi-play-circle"></i>
+                                {{ post.get_analytics()['play_count'] }}
+                            </span>
+                        </div>
+                        
+                        <div class="post-actions">
+                            <a href="{{ url_for('posts.view_post', slug=post.slug) }}" class="btn btn-sm btn-outline-primary">
+                                Listen
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- CTA Section -->
+<div class="cta-section">
+    <div class="container">
+        <div class="cta-card gradient-card-primary">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h2>Ready to Start Sharing Your Voice?</h2>
+                    <p class="mb-0">Join Voice Log today and transform the way you create and share content. No setup required - just record and publish.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    {% if not current_user.is_authenticated %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg">
+                            Get Started Free
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('posts.create_post') }}" class="btn btn-light btn-lg">
+                            Create Post
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+/* Hero Section Styles */
+.hero-section {
+    margin-bottom: 4rem;
+}
+
+.hero-gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 6rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-gradient-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+    z-index: 1;
+}
+
+.hero-gradient-bg .container {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-primary-gradient {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(240, 147, 251, 0.3);
+    color: white;
+}
+
+.btn-outline-light {
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    color: white;
+    background: transparent;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.hero-demo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.demo-card {
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    backdrop-filter: blur(10px);
+}
+
+.demo-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.demo-waveform {
+    margin-bottom: 1.5rem;
+}
+
+.waveform-bars {
+    display: flex;
+    align-items: end;
+    gap: 4px;
+    height: 50px;
+    justify-content: center;
+}
+
+.bar {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    width: 4px;
+    border-radius: 2px;
+    animation: wave 1.5s ease-in-out infinite alternate;
+}
+
+.bar:nth-child(2n) {
+    animation-delay: 0.2s;
+}
+
+.bar:nth-child(3n) {
+    animation-delay: 0.4s;
+}
+
+@keyframes wave {
+    from { opacity: 0.7; transform: scaleY(0.8); }
+    to { opacity: 1; transform: scaleY(1); }
+}
+
+.demo-features {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.feature-tag {
+    background: linear-gradient(135deg, rgba(240, 147, 251, 0.1) 0%, rgba(245, 87, 108, 0.1) 100%);
+    color: #f5576c;
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 500;
+    border: 1px solid rgba(240, 147, 251, 0.2);
+}
+
+/* Features Section */
+.features-section {
+    margin-bottom: 6rem;
+    padding: 4rem 0;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.section-subtitle {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    text-align: center;
+    padding: 2.5rem 2rem;
+    height: 100%;
+    border-radius: 20px;
+    border: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.1;
+    transition: opacity 0.3s ease;
+}
+
+.gradient-card-blue::before {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-card-purple::before {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.gradient-card-green::before {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.gradient-card-orange::before {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.gradient-card-pink::before {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.gradient-card-indigo::before {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+}
+
+.feature-card:hover::before {
+    opacity: 0.15;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1;
+}
+
+.feature-icon i {
+    font-size: 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.feature-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    position: relative;
+    z-index: 1;
+}
+
+.feature-card p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+}
+
+/* Recent Posts Section */
+.recent-posts-section {
+    margin-bottom: 6rem;
+    padding: 4rem 0;
+}
+
+.view-all-link {
+    color: var(--primary-main);
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+    transition: all 0.3s ease;
+}
+
+.view-all-link:hover {
+    color: var(--primary-dark);
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+    transform: translateY(-2px);
+}
+
+.post-card {
+    background: white;
+    border: none;
+    border-radius: 20px;
+    padding: 2rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.post-card:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+    transform: translateY(-5px);
+}
+
+.post-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.post-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.author {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.post-duration {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+    color: var(--primary-main);
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 15px;
+    font-weight: 500;
+}
+
+.post-card-content {
+    flex: 1;
+    margin-bottom: 1.5rem;
+}
+
+.post-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.post-title a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.post-title a:hover {
+    color: var(--primary-main);
+}
+
+.post-summary {
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.post-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.post-stats {
+    display: flex;
+    gap: 1rem;
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* CTA Section */
+.cta-section {
+    margin: 6rem 0;
+    padding: 4rem 0;
+}
+
+.gradient-card-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4rem;
+    border-radius: 25px;
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+    border: none;
+}
+
+.gradient-card-primary h2 {
+    color: white;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.gradient-card-primary p {
+    font-size: 1.125rem;
+    opacity: 0.95;
+    line-height: 1.6;
+}
+
+.btn-light {
+    background: white;
+    color: var(--primary-main);
+    border: none;
+    font-weight: 600;
+    padding: 0.875rem 2rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.btn-light:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.125rem;
+    }
+    
+    .hero-actions {
+        flex-direction: column;
+    }
+    
+    .hero-actions .btn {
+        width: 100%;
+    }
+    
+    .cta-card {
+        text-align: center;
+        padding: 2.5rem;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .feature-card {
+        padding: 2rem 1.5rem;
+    }
+}
+</style>
+{% endblock %}

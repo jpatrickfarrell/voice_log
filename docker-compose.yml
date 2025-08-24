@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  voice-log:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: voice-log-app
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-5010}:5010"
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+      - ./backups:/app/backups
+      - ./logs:/app/logs
+    environment:
+      - FLASK_CONFIG=production
+      - FLASK_DEBUG=False
+      - DATABASE_PATH=data/voice_log.db
+      - UPLOAD_FOLDER=uploads
+      - SECRET_KEY=${SECRET_KEY:-default-secret-change-in-production}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - HOST=0.0.0.0
+      - PORT=5010
+    networks:
+      - voice-log-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5010/api/stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  voice-log-network:
+    driver: bridge
+    name: voice_log_network

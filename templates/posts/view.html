@@ -24,38 +24,7 @@
             <span>{{ post.title }}</span>
         </div>
         
-        <div class="post-title-section">
-            <h1 class="post-title">{{ post.title }}</h1>
-            
-            <div class="post-metadata">
-                <div class="post-author">
-                    <i class="bi bi-person-circle"></i>
-                    <span>{{ author.username if author else 'Anonymous' }}</span>
-                </div>
-                
-                <div class="post-date">
-                    <i class="bi bi-calendar3"></i>
-                    <time datetime="{{ post.created_at }}">{{ post.created_at }}</time>
-                </div>
-                
-                <div class="post-duration">
-                    <i class="bi bi-clock"></i>
-                    <span>{{ post.format_duration() }}</span>
-                </div>
-                
-                {% if post.privacy_level == 'unlisted' %}
-                <div class="privacy-badge unlisted">
-                    <i class="bi bi-eye-slash"></i>
-                    <span>Unlisted</span>
-                </div>
-                {% elif post.privacy_level == 'private' %}
-                <div class="privacy-badge private">
-                    <i class="bi bi-lock"></i>
-                    <span>Private</span>
-                </div>
-                {% endif %}
-            </div>
-        </div>
+
         
         <div class="post-actions">
             {% if current_user.is_authenticated and current_user.id == post.user_id %}
@@ -74,6 +43,62 @@
         </div>
     </header>
 
+    <!-- Audio Player Section -->
+    <div class="audio-player-section">
+
+        <div class="post-title-section">
+            <h1 class="post-title">{{ post.title }}</h1>
+            <div class="post-meta">
+                <span class="post-author">by {{ author.username if author else 'Unknown' }}</span>
+                <span class="post-date">
+                    {% if post.created_at is string %}
+                        {{ post.created_at }}
+                    {% elif post.created_at %}
+                        {{ post.created_at.strftime('%B %d, %Y') }}
+                    {% else %}
+                        Unknown date
+                    {% endif %}
+                </span>
+                <span class="post-duration">
+                    {% if post.format_duration %}
+                        {{ post.format_duration() }}
+                    {% else %}
+                        Unknown duration
+                    {% endif %}
+                </span>
+                <span class="post-privacy privacy-{{ post.privacy_level }}">
+                    {% if post.privacy_level == 'public' %}
+                        <i class="fas fa-globe"></i> Public
+                    {% elif post.privacy_level == 'unlisted' %}
+                        <i class="fas fa-link"></i> Unlisted
+                    {% else %}
+                        <i class="fas fa-lock"></i> Private
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+
+        <h3>Listen to this post</h3>
+        <div class="audio-player-container">
+            {% if post.converted_mp3_path %}
+                <!-- Use converted MP3 file -->
+                <audio controls preload="metadata" class="audio-element" id="audioPlayer">
+                    <source src="{{ url_for('posts.serve_audio', filename=post.converted_mp3_path) }}" type="audio/mpeg">
+                    <source src="{{ url_for('posts.serve_audio', filename=post.audio_filename) }}" type="audio/{{ post.audio_filename.split('.')[-1] }}">
+                    Your browser does not support the audio element.
+                </audio>
+            {% else %}
+                <!-- Use original file -->
+                <audio controls preload="metadata" class="audio-element" id="audioPlayer">
+                    <source src="{{ url_for('posts.serve_audio', filename=post.audio_filename) }}" type="audio/{{ post.audio_filename.split('.')[-1] }}">
+                    Your browser does not support the audio element.
+                </audio>
+            {% endif %}
+            
+        </div>
+    </div>
+
     <!-- Main Content -->
     <div class="post-content">
         <div class="post-main">
@@ -84,48 +109,6 @@
                 <p id="summary">{{ post.summary }}</p>
             </div>
             {% endif %}
-            
-            <!-- Audio Player -->
-            <div class="audio-player">
-                <h3>Listen to this post</h3>
-                <div class="audio-player-container">
-                    {% if post.converted_mp3_path %}
-                        <!-- Use converted MP3 file -->
-                        <audio controls preload="metadata" class="audio-element" id="audioPlayer">
-                            <source src="{{ url_for('posts.serve_audio', filename=post.converted_mp3_path) }}" type="audio/mpeg">
-                            <source src="{{ url_for('posts.serve_audio', filename=post.audio_filename) }}" type="audio/{{ post.audio_filename.split('.')[-1] }}">
-                            Your browser does not support the audio element.
-                        </audio>
-                    {% else %}
-                        <!-- Use original file -->
-                        <audio controls preload="metadata" class="audio-element" id="audioPlayer">
-                            <source src="{{ url_for('posts.serve_audio', filename=post.audio_filename) }}" type="audio/{{ post.audio_filename.split('.')[-1] }}">
-                            Your browser does not support the audio element.
-                        </audio>
-                    {% endif %}
-                    
-                    <!-- Audio Player Visualizer -->
-                    <div class="audio-visualizer">
-                        <div class="visualizer-bars">
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
             
             <!-- Transcript -->
             {% if post.transcript %}
@@ -237,12 +220,11 @@
 }
 
 .post-header {
-    background: var(--bg-main);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-lg);
-    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     margin-bottom: 2rem;
-    box-shadow: var(--shadow-md);
+    gap: 2rem;
 }
 
 .post-breadcrumb {
@@ -264,57 +246,66 @@
 }
 
 .post-title-section {
-    margin-bottom: 1.5rem;
+    flex: 1;
 }
 
 .post-title {
-    font-size: 2rem;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+    font-size: 2.5rem;
     font-weight: 700;
-    margin-bottom: 1rem;
-    line-height: 1.3;
+    line-height: 1.2;
 }
 
-.post-metadata {
+.post-meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem;
+    gap: 1rem;
     align-items: center;
-}
-
-.post-author,
-.post-date,
-.post-duration {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
     color: var(--text-secondary);
     font-size: 0.875rem;
 }
 
-.privacy-badge {
+.post-author, .post-date, .post-duration {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.25rem 0.5rem;
+    gap: 0.5rem;
+}
+
+.post-privacy {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
     border-radius: var(--radius-sm);
     font-size: 0.75rem;
     font-weight: 500;
 }
 
-.privacy-badge.unlisted {
+.post-privacy i {
+    font-size: 0.875rem;
+}
+
+.post-privacy.privacy-public {
+    background: rgba(100, 181, 246, 0.1);
+    color: #6366F1;
+}
+
+.post-privacy.privacy-unlisted {
     background: rgba(245, 158, 11, 0.1);
     color: var(--secondary-orange);
 }
 
-.privacy-badge.private {
+.post-privacy.privacy-private {
     background: rgba(239, 68, 68, 0.1);
     color: #EF4444;
 }
 
 .post-actions {
     display: flex;
+    align-items: center;
     gap: 0.5rem;
-    flex-wrap: wrap;
+    flex-shrink: 0;
 }
 
 .post-content {
@@ -356,32 +347,17 @@
     font-size: 1rem;
 }
 
+/* Audio Player Section */
 .audio-player-section {
     background: var(--bg-main);
     border: 1px solid var(--border-light);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     margin-bottom: 2rem;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-sm);
 }
 
 .audio-player-section h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--text-primary);
-}
-
-.audio-player {
-    background: linear-gradient(135deg, var(--bg-main) 0%, var(--bg-secondary) 100%);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-lg);
-    padding: 2rem;
-    box-shadow: var(--shadow-lg);
-    margin: 2rem 0;
-}
-
-.audio-player h3 {
     color: var(--text-primary);
     margin-bottom: 1.5rem;
     text-align: center;
@@ -616,42 +592,34 @@
 
 @media (max-width: 768px) {
     .post-header {
-        padding: 1.5rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
     }
     
     .post-title {
-        font-size: 1.5rem;
+        font-size: 2rem;
+        text-align: center;
     }
     
-    .post-metadata {
+    .post-meta {
+        justify-content: center;
         flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
+        align-items: center;
+        gap: 0.5rem;
     }
     
     .post-actions {
-        flex-direction: column;
+        justify-content: center;
+        flex-wrap: wrap;
     }
     
-    .post-actions .btn {
-        width: 100%;
-    }
-    
-    .audio-player-section,
-    .transcript-section,
-    .post-summary-card,
-    .stats-widget,
-    .author-widget,
-    .actions-widget {
+    .audio-player-section {
         padding: 1rem;
-    }
-
-    .audio-player {
-        padding: 1.5rem;
-        margin: 1rem 0;
+        margin-bottom: 1.5rem;
     }
     
-    .audio-player h3 {
+    .audio-player-section h3 {
         font-size: 1.3rem;
     }
     

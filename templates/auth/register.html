@@ -4,6 +4,23 @@
 
 {% block head %}
 <meta name="description" content="Join Voice Log to create and share listenable blog posts. Transform your voice into engaging content with transcripts and summaries.">
+<style>
+/* Reset any potential conflicts */
+.auth-container * {
+    box-sizing: border-box;
+}
+
+/* Override Bootstrap styles */
+.auth-container .form-control,
+.auth-container .btn,
+.auth-container .form-check {
+    all: unset;
+}
+
+.auth-container .form-group {
+    all: unset;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -183,11 +200,24 @@
 
 {% block scripts %}
 <style>
+/* CSS Variables */
+:root {
+    --primary-main: #8B5CF6;
+    --primary-dark: #7C3AED;
+    --primary-light: #A78BFA;
+    --text-primary: #1E293B;
+    --text-secondary: #64748B;
+    --text-muted: #94A3B8;
+    --border-light: #E2E8F0;
+    --bg-main: #FFFFFF;
+}
+
 /* Auth Container */
 .auth-container {
     min-height: 100vh;
     display: flex;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Auth Card */
@@ -273,6 +303,7 @@
     font-size: 1rem;
     transition: all 0.3s ease;
     background: white;
+    font-family: inherit;
 }
 
 .input-wrapper input:focus {
@@ -405,6 +436,7 @@
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    font-family: inherit;
 }
 
 .btn-primary:hover {
@@ -492,6 +524,7 @@
     text-decoration: none;
     font-weight: 500;
     transition: all 0.3s ease;
+    font-family: inherit;
 }
 
 .btn-secondary:hover {

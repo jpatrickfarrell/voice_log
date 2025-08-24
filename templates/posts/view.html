@@ -86,13 +86,44 @@
             {% endif %}
             
             <!-- Audio Player -->
-            <div class="audio-player-section">
+            <div class="audio-player">
                 <h3>Listen to this post</h3>
-                <div class="audio-player">
-                    <audio controls preload="metadata" data-post-slug="{{ post.slug }}">
-                        <source src="{{ post.get_audio_url() }}" type="audio/mpeg">
-                        Your browser does not support the audio element.
-                    </audio>
+                <div class="audio-player-container">
+                    {% if post.converted_mp3_path %}
+                        <!-- Use converted MP3 file -->
+                        <audio controls preload="metadata" class="audio-element" id="audioPlayer">
+                            <source src="{{ url_for('posts.serve_audio', filename=post.converted_mp3_path) }}" type="audio/mpeg">
+                            <source src="{{ url_for('posts.serve_audio', filename=post.audio_filename) }}" type="audio/{{ post.audio_filename.split('.')[-1] }}">
+                            Your browser does not support the audio element.
+                        </audio>
+                    {% else %}
+                        <!-- Use original file -->
+                        <audio controls preload="metadata" class="audio-element" id="audioPlayer">
+                            <source src="{{ url_for('posts.serve_audio', filename=post.audio_filename) }}" type="audio/{{ post.audio_filename.split('.')[-1] }}">
+                            Your browser does not support the audio element.
+                        </audio>
+                    {% endif %}
+                    
+                    <!-- Audio Player Visualizer -->
+                    <div class="audio-visualizer">
+                        <div class="visualizer-bars">
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -342,16 +373,115 @@
 }
 
 .audio-player {
-    background: var(--bg-secondary);
+    background: linear-gradient(135deg, var(--bg-main) 0%, var(--bg-secondary) 100%);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    margin: 2rem 0;
+}
+
+.audio-player h3 {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.audio-player-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.audio-element {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Remove ALL custom audio styling - let browser handle everything natively */
+
+.audio-visualizer {
+    width: 100%;
+    max-width: 400px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
     padding: 1rem;
-    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-lg);
     border: 1px solid var(--border-light);
 }
 
-.audio-player audio {
-    width: 100%;
-    height: 40px;
-    border-radius: var(--radius-sm);
+.visualizer-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 100%;
+}
+
+.bar {
+    width: 4px;
+    background: linear-gradient(to top, var(--primary-color), var(--accent-color));
+    border-radius: 2px;
+    animation: visualize 1.5s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 0.1s);
+}
+
+.bar:nth-child(1) { --i: 1; height: 20px; }
+.bar:nth-child(2) { --i: 2; height: 35px; }
+.bar:nth-child(3) { --i: 3; height: 50px; }
+.bar:nth-child(4) { --i: 4; height: 65px; }
+.bar:nth-child(5) { --i: 5; height: 80px; }
+.bar:nth-child(6) { --i: 6; height: 70px; }
+.bar:nth-child(7) { --i: 7; height: 55px; }
+.bar:nth-child(8) { --i: 8; height: 40px; }
+.bar:nth-child(9) { --i: 9; height: 25px; }
+.bar:nth-child(10) { --i: 10; height: 45px; }
+.bar:nth-child(11) { --i: 11; height: 60px; }
+.bar:nth-child(12) { --i: 12; height: 75px; }
+.bar:nth-child(13) { --i: 13; height: 55px; }
+.bar:nth-child(14) { --i: 14; height: 35px; }
+.bar:nth-child(15) { --i: 15; height: 20px; }
+
+@keyframes visualize {
+    0%, 100% { transform: scaleY(1); opacity: 0.7; }
+    50% { transform: scaleY(1.2); opacity: 1; }
+}
+
+.audio-player-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.audio-debug-info {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+}
+
+.audio-debug-info summary {
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.debug-content {
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.debug-content p {
+    margin: 0.25rem 0;
 }
 
 .transcript-section {
@@ -515,6 +645,25 @@
     .actions-widget {
         padding: 1rem;
     }
+
+    .audio-player {
+        padding: 1.5rem;
+        margin: 1rem 0;
+    }
+    
+    .audio-player h3 {
+        font-size: 1.3rem;
+    }
+    
+    .audio-visualizer {
+        max-width: 300px;
+        height: 60px;
+    }
+    
+    .audio-info {
+        flex-direction: column;
+        gap: 1rem;
+    }
 }
 
 /* Loading states */
@@ -537,9 +686,193 @@
     color: #EF4444;
     font-size: 0.875rem;
 }
+
+/* Audio error message */
+.audio-error-message {
+    margin-top: 1rem;
+}
+
+.audio-error-message .alert {
+    margin: 0;
+    border-radius: var(--radius-md);
+}
+
+.audio-error-message .alert-danger {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #DC2626;
+}
+
+.audio-error-message .alert i {
+    margin-right: 0.5rem;
+}
+
+/* Audio player hover effects */
+.audio-player:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+    transition: all 0.3s ease;
+}
+
+.audio-element:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 20px rgba(var(--primary-color-rgb), 0.3);
+    transition: all 0.3s ease;
+}
 </style>
 
 <script>
+// Initialize audio player with visualizer
+function initializeAudioPlayer() {
+    const audioPlayer = document.getElementById('audioPlayer');
+    const visualizerBars = document.querySelectorAll('.bar');
+    
+    if (!audioPlayer || !visualizerBars.length) return;
+    
+    // Add event listeners for audio player
+    audioPlayer.addEventListener('play', () => {
+        visualizerBars.forEach(bar => {
+            bar.style.animationPlayState = 'running';
+        });
+    });
+    
+    audioPlayer.addEventListener('pause', () => {
+        visualizerBars.forEach(bar => {
+            bar.style.animationPlayState = 'paused';
+        });
+    });
+    
+    audioPlayer.addEventListener('ended', () => {
+        visualizerBars.forEach(bar => {
+            bar.style.animationPlayState = 'paused';
+        });
+    });
+    
+    // Add hover effect to visualizer
+    const visualizer = document.querySelector('.audio-visualizer');
+    if (visualizer) {
+        visualizer.addEventListener('mouseenter', () => {
+            if (audioPlayer.paused) {
+                visualizerBars.forEach(bar => {
+                    bar.style.animationPlayState = 'running';
+                });
+            }
+        });
+        
+        visualizer.addEventListener('mouseleave', () => {
+            if (audioPlayer.paused) {
+                visualizerBars.forEach(bar => {
+                    bar.style.animationPlayState = 'paused';
+                });
+            }
+        });
+    }
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeAudioPlayer();
+});
+
+function setAudioFormat() {
+    const audioFormat = document.getElementById('audioFormat');
+    if (audioFormat) {
+        // Get the filename from the audio source
+        const audioPlayer = document.getElementById('audioPlayer');
+        if (audioPlayer) {
+            const source = audioPlayer.querySelector('source');
+            if (source && source.src) {
+                const filename = source.src.split('/').pop();
+                const extension = filename.split('.').pop().toUpperCase();
+                audioFormat.textContent = extension;
+            }
+        }
+    }
+}
+
+function testAudioAccessibility() {
+    const audioPlayer = document.getElementById('audioPlayer');
+    if (!audioPlayer) return;
+    
+    const audioUrl = audioPlayer.querySelector('source').src;
+    console.log('Testing audio URL accessibility:', audioUrl);
+    
+    // Test if the audio file is accessible
+    fetch(audioUrl, { method: 'HEAD' })
+        .then(response => {
+            if (response.ok) {
+                console.log('Audio file is accessible, status:', response.status);
+                console.log('Content-Type:', response.headers.get('Content-Type'));
+                console.log('Content-Length:', response.headers.get('Content-Length'));
+                
+                // Update file size info if available
+                const contentLength = response.headers.get('Content-Length');
+                if (contentLength) {
+                    updateFileSizeInfo(parseInt(contentLength));
+                }
+            } else {
+                console.error('Audio file not accessible, status:', response.status);
+                showAudioError();
+            }
+        })
+        .catch(error => {
+            console.error('Error testing audio accessibility:', error);
+            showAudioError();
+        });
+}
+
+function updateFileSizeInfo(bytes) {
+    const fileSizeInfo = document.getElementById('fileSizeInfo');
+    if (fileSizeInfo && bytes) {
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        if (bytes === 0) {
+            fileSizeInfo.textContent = '0 Bytes';
+        } else {
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            fileSizeInfo.textContent = parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    }
+}
+
+function showAudioError() {
+    const audioPlayer = document.getElementById('audioPlayer');
+    if (!audioPlayer) return;
+    
+    // Create error message
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'audio-error-message';
+    errorDiv.innerHTML = `
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i>
+            <strong>Audio Playback Error</strong><br>
+            <small>There was an issue loading the audio file. Please try refreshing the page or contact support if the problem persists.</small>
+        </div>
+    `;
+    
+    // Insert error message after audio player
+    audioPlayer.parentNode.insertBefore(errorDiv, audioPlayer.nextSibling);
+}
+
+function trackPlayEvent(postSlug) {
+    // Track play event for analytics
+    fetch(`/posts/increment-play/${postSlug}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    }).catch(err => console.log('Play tracking failed:', err));
+}
+
+function downloadAudio(audioUrl, title) {
+    // Create a temporary link element to trigger download
+    const link = document.createElement('a');
+    link.href = audioUrl;
+    link.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${audioUrl.split('.').pop()}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 // Initialize share functionality
 function sharePost(title, url) {
     if (navigator.share) {
@@ -549,21 +882,69 @@ function sharePost(title, url) {
             url: url
         }).catch(err => {
             console.log('Error sharing:', err);
-            VoiceLog.copyToClipboard(url, 'Link copied to clipboard!');
+            if (typeof VoiceLog !== 'undefined' && VoiceLog.copyToClipboard) {
+                VoiceLog.copyToClipboard(url, 'Link copied to clipboard!');
+            } else {
+                copyToClipboard(url, 'Link copied to clipboard!');
+            }
         });
     } else {
-        VoiceLog.copyToClipboard(url, 'Link copied to clipboard!');
+        if (typeof VoiceLog !== 'undefined' && VoiceLog.copyToClipboard) {
+            VoiceLog.copyToClipboard(url, 'Link copied to clipboard!');
+        } else {
+            copyToClipboard(url, 'Link copied to clipboard!');
+        }
     }
 }
 
 // Process post functionality
 function processPost(slug) {
-    VoiceLog.processPost(slug);
+    if (typeof VoiceLog !== 'undefined' && VoiceLog.processPost) {
+        VoiceLog.processPost(slug);
+    } else {
+        console.log('Processing post:', slug);
+        // Fallback processing logic
+    }
 }
 
 // Copy to clipboard functionality
 function copyToClipboard(text, message) {
-    VoiceLog.copyToClipboard(text, message);
+    if (typeof VoiceLog !== 'undefined' && VoiceLog.copyToClipboard) {
+        VoiceLog.copyToClipboard(text, message);
+    } else {
+        // Fallback clipboard functionality
+        navigator.clipboard.writeText(text).then(() => {
+            showToast(message || 'Copied to clipboard!', 'success');
+        }).catch(() => {
+            showToast('Failed to copy to clipboard', 'error');
+        });
+    }
+}
+
+// Simple toast implementation
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'error' ? '#EF4444' : type === 'success' ? '#10B981' : '#3B82F6'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 9999;
+        max-width: 300px;
+        word-wrap: break-word;
+    `;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
 }
 </script>
 {% endblock %}

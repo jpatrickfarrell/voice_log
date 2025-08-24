@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, send_from_directory, abort, current_app
+from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, send_from_directory, abort, current_app, send_file
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app.models.voice_post import VoicePost
@@ -63,21 +63,39 @@ def create_post():
             generated_title = os.path.splitext(file.filename)[0]
         
         # Create post
-        post = VoicePost.create(
-            user_id=current_user.id,
-            title=generated_title,
-            audio_filename=filename,
-            transcript=transcript,
-            summary=summary,
-            duration_seconds=duration,
-            privacy_level=privacy_level
-        )
-        
-        if post:
-            flash('Voice post created successfully!', 'success')
-            return redirect(url_for('posts.view_post', slug=post.slug))
-        else:
-            flash('Error creating post', 'error')
+        try:
+            current_app.logger.info(f"Attempting to create post for user {current_user.id}")
+            current_app.logger.info(f"Title: {generated_title}")
+            current_app.logger.info(f"Audio filename: {filename}")
+            current_app.logger.info(f"Duration: {duration}")
+            current_app.logger.info(f"Privacy level: {privacy_level}")
+            current_app.logger.info(f"Transcript: {transcript[:100] if transcript else 'None'}...")
+            current_app.logger.info(f"Summary: {summary[:100] if summary else 'None'}...")
+            
+            post = VoicePost.create(
+                user_id=current_user.id,
+                title=generated_title,
+                audio_filename=filename,
+                transcript=transcript,
+                summary=summary,
+                duration_seconds=duration,
+                privacy_level=privacy_level
+            )
+            
+            if post:
+                current_app.logger.info(f"Post created successfully with ID: {post.id}, slug: {post.slug}")
+                flash('Voice post created successfully!', 'success')
+                return redirect(url_for('posts.view_post', slug=post.slug))
+            else:
+                current_app.logger.error("VoicePost.create() returned None")
+                flash('Error creating post: VoicePost.create() returned None', 'error')
+                
+        except Exception as e:
+            current_app.logger.error(f"Exception during post creation: {str(e)}")
+            current_app.logger.error(f"Exception type: {type(e)}")
+            import traceback
+            current_app.logger.error(f"Traceback: {traceback.format_exc()}")
+            flash(f'Error creating post: {str(e)}', 'error')
     
     return render_template('posts/create.html')
 
@@ -200,25 +218,94 @@ def process_post(slug):
 
 @posts_bp.route('/audio/<filename>')
 def serve_audio(filename):
-    """Serve audio files"""
-    # Security: only serve files that exist in uploads and belong to posts
-    from app.services.database import get_db
-    
-    with get_db(current_app.config['DATABASE_PATH']) as conn:
-        post = conn.execute(
-            'SELECT * FROM voice_posts WHERE audio_filename = ?', 
-            (filename,)
-        ).fetchone()
+    """Serve audio files with proper headers"""
+    try:
+        current_app.logger.info(f"Attempting to serve audio: {filename}")
+        current_app.logger.info(f"Upload folder: {current_app.config['UPLOAD_FOLDER']}")
         
-        if not post:
-            abort(404)
+        # Handle different file path scenarios
+        file_path = None
+        file_type = "unknown"
         
-        # Check privacy permissions
-        if post['privacy_level'] == 'private':
-            if not current_user.is_authenticated or current_user.id != post['user_id']:
-                abort(404)
-    
-    return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
+        # Check if this is a converted MP3 file (stored in converted/ subfolder)
+        if filename.endswith('_converted.mp3'):
+            converted_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'converted', filename)
+            if os.path.exists(converted_path):
+                file_path = converted_path
+                file_type = "converted_mp3"
+                current_app.logger.info(f"Found converted MP3 file: {converted_path}")
+        
+        # If not found as converted MP3, check if it's an original file
+        if not file_path:
+            original_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            if os.path.exists(original_path):
+                file_path = original_path
+                file_type = "original"
+                current_app.logger.info(f"Found original audio file: {original_path}")
+        
+        # If still not found, check if it's a converted file without the _converted suffix
+        if not file_path and not filename.endswith('_converted.mp3'):
+            # Try to find the converted version
+            base_name = os.path.splitext(filename)[0]
+            converted_filename = f"{base_name}_converted.mp3"
+            converted_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'converted', converted_filename)
+            if os.path.exists(converted_path):
+                file_path = converted_path
+                file_type = "converted_mp3"
+                current_app.logger.info(f"Found converted MP3 file (without suffix): {converted_path}")
+        
+        if not file_path:
+            current_app.logger.error(f"Audio file not found: {filename}")
+            current_app.logger.error(f"Checked paths:")
+            current_app.logger.error(f"  - Converted: {os.path.join(current_app.config['UPLOAD_FOLDER'], 'converted', filename)}")
+            current_app.logger.error(f"  - Original: {os.path.join(current_app.config['UPLOAD_FOLDER'], filename)}")
+            abort(404, description=f"Audio file {filename} not found")
+        
+        # Get file info
+        file_size = os.path.getsize(file_path)
+        file_extension = os.path.splitext(filename)[1].lower()
+        
+        # Set appropriate MIME type
+        mime_types = {
+            '.mp3': 'audio/mpeg',
+            '.wav': 'audio/wav',
+            '.m4a': 'audio/mp4',
+            '.aac': 'audio/aac',
+            '.ogg': 'audio/ogg',
+            '.flac': 'audio/flac',
+            '.webm': 'audio/webm'
+        }
+        
+        content_type = mime_types.get(file_extension, 'audio/mpeg')
+        
+        current_app.logger.info(f"Serving {file_type} file: {file_path} ({content_type}, {file_size} bytes)")
+        
+        # Set headers for audio streaming
+        response = send_file(
+            file_path,
+            mimetype=content_type,
+            as_attachment=False,
+            conditional=True  # Enable range requests for streaming
+        )
+        
+        # Add CORS headers
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, HEAD'
+        response.headers['Access-Control-Allow-Headers'] = 'Range'
+        
+        # Add audio-specific headers
+        response.headers['Accept-Ranges'] = 'bytes'
+        response.headers['Content-Length'] = str(file_size)
+        
+        current_app.logger.info(f"Audio served successfully: {filename} ({content_type}, {file_size} bytes)")
+        return response
+        
+    except Exception as e:
+        current_app.logger.error(f"Error serving audio {filename}: {str(e)}")
+        current_app.logger.error(f"Exception type: {type(e)}")
+        import traceback
+        current_app.logger.error(f"Traceback: {traceback.format_exc()}")
+        abort(500)
 
 @posts_bp.route('/increment-play/<slug>', methods=['POST'])
 def increment_play(slug):

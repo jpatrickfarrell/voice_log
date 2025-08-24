@@ -53,33 +53,101 @@
                 </div>
             </div>
 
-            <!-- Audio Upload Section -->
+            <!-- Audio Input Section -->
             <div class="form-section">
                 <div class="section-header">
-                    <h3><i class="bi bi-mic"></i> Audio File</h3>
-                    <p>Upload your voice recording (MP3, WAV, M4A, etc.)</p>
+                    <h3><i class="bi bi-mic"></i> Audio Input</h3>
+                    <p>Choose how to provide your audio content</p>
                 </div>
                 
                 <div class="section-content">
-                    <div class="upload-area" id="uploadArea">
-                        <div class="upload-icon">
-                            <i class="bi bi-cloud-upload"></i>
+                    <!-- Input Method Toggle -->
+                    <div class="input-method-toggle">
+                        <div class="toggle-buttons">
+                            <button type="button" class="toggle-btn active" data-method="upload" id="uploadToggle">
+                                <i class="bi bi-cloud-upload"></i>
+                                Upload File
+                            </button>
+                            <button type="button" class="toggle-btn" data-method="record" id="recordToggle">
+                                <i class="bi bi-mic"></i>
+                                Record Audio
+                            </button>
                         </div>
-                        <div class="upload-text">
-                            <h4>Drop your audio file here or click to browse</h4>
-                            <p>Supports MP3, WAV, FLAC, M4A, AAC, OGG, WEBM up to 50MB</p>
-                        </div>
-                        <input type="file" 
-                               class="form-control d-none" 
-                               id="audio_file" 
-                               name="audio_file" 
-                               accept="audio/*" 
-                               required>
-                        <div class="invalid-feedback"></div>
                     </div>
-                    
-                    <div class="file-preview d-none" id="filePreview">
-                        <!-- File preview will be inserted here -->
+
+                    <!-- Upload Method -->
+                    <div class="input-method" id="uploadMethod">
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-icon">
+                                <i class="bi bi-cloud-upload"></i>
+                            </div>
+                            <div class="upload-text">
+                                <h4>Drop your audio file here or click to browse</h4>
+                                <p>Supports MP3, WAV, FLAC, M4A, AAC, OGG, WEBM up to 50MB</p>
+                            </div>
+                            <input type="file" 
+                                   class="form-control d-none" 
+                                   id="audio_file" 
+                                   name="audio_file" 
+                                   accept="audio/*"
+                                   required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="file-preview d-none" id="filePreview">
+                            <!-- File preview will be inserted here -->
+                        </div>
+                    </div>
+
+                    <!-- Record Method -->
+                    <div class="input-method d-none" id="recordMethod">
+                        <div class="record-container">
+                            <div class="record-status" id="recordStatus">
+                                <div class="status-indicator">
+                                    <i class="bi bi-mic"></i>
+                                    <span>Ready to record</span>
+                                </div>
+                                <div class="record-time" id="recordTime">00:00</div>
+                            </div>
+                            
+                            <div class="volume-meter-container">
+                                <div class="volume-meter" id="volumeMeter">
+                                    <div class="volume-bar" id="volumeBar"></div>
+                                </div>
+                                <div class="volume-label">Volume Level</div>
+                            </div>
+                            
+                            <div class="record-controls">
+                                <button type="button" class="btn btn-primary btn-lg record-btn" id="recordBtn">
+                                    <i class="bi bi-mic"></i>
+                                    <span>Start Recording</span>
+                                </button>
+                                
+                                <button type="button" class="btn btn-outline-secondary btn-lg stop-btn d-none" id="stopBtn">
+                                    <i class="bi bi-stop-circle"></i>
+                                    <span>Stop Recording</span>
+                                </button>
+                                
+                                <button type="button" class="btn btn-outline-danger btn-sm clear-btn d-none" id="clearBtn">
+                                    <i class="bi bi-trash"></i>
+                                    <span>Clear Recording</span>
+                                </button>
+                            </div>
+                            
+                            <div class="recording-preview d-none" id="recordingPreview">
+                                <div class="preview-header">
+                                    <h5><i class="bi bi-music-note-beamed"></i> Recording Preview</h5>
+                                    <p>Your recorded audio is ready to use</p>
+                                </div>
+                                <audio controls id="recordingAudio" class="w-100">
+                                    Your browser does not support the audio element.
+                                </audio>
+                                <div class="recording-info">
+                                    <span class="recording-duration" id="recordingDuration"></span>
+                                    <span class="recording-size" id="recordingSize"></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -110,7 +178,7 @@
                         <div class="processing-info">
                             <div class="info-item">
                                 <i class="bi bi-file-text"></i>
-                                <span>Transcript generation using OpenAI Whisper</span>
+                                <span>Transcript generation using <span id="apiProvider">AI</span></span>
                             </div>
                             <div class="info-item">
                                 <i class="bi bi-magic"></i>
@@ -124,7 +192,7 @@
                         
                         <div class="alert alert-info">
                             <i class="bi bi-info-circle"></i>
-                            <strong>Note:</strong> AI processing requires an OpenAI API key to be configured. 
+                            <strong>Note:</strong> AI processing requires either an OpenAI API key or Google Gemini API key to be configured. 
                             You can also process posts manually after creation.
                         </div>
                     </div>
@@ -149,28 +217,7 @@
             </div>
         </form>
         
-        <!-- Quick Record Section (for future mobile implementation) -->
-        <div class="quick-record-section d-none" id="quickRecordSection">
-            <div class="section-header">
-                <h3><i class="bi bi-mic-fill"></i> Quick Record</h3>
-                <p>Record directly from your device</p>
-            </div>
-            
-            <div class="record-controls">
-                <button type="button" class="btn btn-danger btn-lg record-btn" id="recordBtn">
-                    <i class="bi bi-mic"></i>
-                    <span>Start Recording</span>
-                </button>
-                
-                <div class="record-status d-none" id="recordStatus">
-                    <div class="recording-indicator">
-                        <div class="pulse"></div>
-                        <span>Recording...</span>
-                    </div>
-                    <div class="record-time">00:00</div>
-                </div>
-            </div>
-        </div>
+
     </div>
 </div>
 {% endblock %}
@@ -420,20 +467,144 @@
     white-space: nowrap;
 }
 
-/* Quick Record Section */
-.quick-record-section {
-    background: var(--bg-main);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-lg);
-    margin-top: 2rem;
-    overflow: hidden;
+/* Input Method Toggle */
+.input-method-toggle {
+    margin-bottom: 1.5rem;
 }
 
-.record-controls {
+.toggle-buttons {
+    display: flex;
+    gap: 0.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 0.25rem;
+}
+
+.toggle-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.toggle-btn:hover {
+    color: var(--text-primary);
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.toggle-btn.active {
+    background: var(--primary-main);
+    color: white;
+    box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);
+}
+
+.toggle-btn i {
+    font-size: 1.125rem;
+}
+
+/* Input Methods */
+.input-method {
+    transition: all 0.3s ease;
+}
+
+.input-method.d-none {
+    display: none !important;
+}
+
+/* Record Method */
+.record-container {
+    text-align: center;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+}
+
+.record-status {
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-main);
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.status-indicator.recording {
+    color: #EF4444;
+}
+
+.status-indicator.recording i {
+    animation: pulse 1s infinite;
+}
+
+.record-time {
+    font-family: 'Courier New', monospace;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Volume Meter */
+.volume-meter-container {
+    margin-bottom: 2rem;
     text-align: center;
 }
 
-.record-btn {
+.volume-meter {
+    width: 100%;
+    height: 60px;
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 0.5rem;
+}
+
+.volume-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #10B981, #3B82F6, #8B5CF6, #EF4444);
+    width: 0%;
+    transition: width 0.1s ease;
+    border-radius: var(--radius-md);
+}
+
+.volume-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Record Controls */
+.record-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.record-btn, .stop-btn {
     width: 200px;
     height: 60px;
     border-radius: 30px;
@@ -442,42 +613,114 @@
     justify-content: center;
     gap: 0.5rem;
     font-weight: 600;
+    font-size: 1.125rem;
 }
 
-.record-status {
-    margin-top: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
+.record-btn {
+    background: var(--primary-main);
+    border: none;
+    color: white;
 }
 
-.recording-indicator {
+.record-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.stop-btn {
+    background: #EF4444;
+    border: 1px solid #EF4444;
+    color: white;
+}
+
+.stop-btn:hover {
+    background: #DC2626;
+    border-color: #DC2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.clear-btn {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+}
+
+/* Recording Preview */
+.recording-preview {
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    text-align: left;
+}
+
+.preview-header {
+    margin-bottom: 1rem;
+}
+
+.preview-header h5 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #EF4444;
-    font-weight: 500;
 }
 
-.pulse {
-    width: 12px;
-    height: 12px;
-    background: #EF4444;
-    border-radius: 50%;
-    animation: pulse 1s infinite;
+.preview-header h5 i {
+    color: var(--primary-main);
 }
 
+.preview-header p {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.recording-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* Animations */
 @keyframes pulse {
     0% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.5; transform: scale(1.2); }
     100% { opacity: 1; transform: scale(1); }
 }
 
-.record-time {
-    font-family: 'Courier New', monospace;
-    font-size: 1.25rem;
-    font-weight: 600;
+/* Toast Notifications */
+.toast {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.toast-error {
+    background: #EF4444 !important;
+}
+
+.toast-success {
+    background: #10B981 !important;
+}
+
+.toast-info {
+    background: #3B82F6 !important;
 }
 
 /* Responsive Design */
@@ -514,6 +757,30 @@
     .section-header {
         padding: 1rem;
     }
+    
+    /* Mobile recording adjustments */
+    .toggle-buttons {
+        flex-direction: column;
+    }
+    
+    .record-container {
+        padding: 1rem;
+    }
+    
+    .record-status {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .record-btn, .stop-btn {
+        width: 100%;
+        max-width: 250px;
+    }
+    
+    .volume-meter {
+        height: 40px;
+    }
 }
 
 /* Form validation styles */
@@ -540,10 +807,41 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    initializeInputMethodToggle();
     initializeFileUpload();
+    initializeRecording();
     initializeFormSubmission();
 });
 
+// Input Method Toggle
+function initializeInputMethodToggle() {
+    const uploadToggle = document.getElementById('uploadToggle');
+    const recordToggle = document.getElementById('recordToggle');
+    const uploadMethod = document.getElementById('uploadMethod');
+    const recordMethod = document.getElementById('recordMethod');
+    
+    uploadToggle.addEventListener('click', () => {
+        uploadToggle.classList.add('active');
+        recordToggle.classList.remove('active');
+        uploadMethod.classList.remove('d-none');
+        recordMethod.classList.add('d-none');
+        
+        // Clear any existing recording
+        clearRecording();
+    });
+    
+    recordToggle.addEventListener('click', () => {
+        recordToggle.classList.add('active');
+        uploadToggle.classList.remove('active');
+        recordMethod.classList.remove('d-none');
+        uploadMethod.classList.add('d-none');
+        
+        // Clear any existing file
+        clearFileSelection();
+    });
+}
+
+// File Upload Functions
 function initializeFileUpload() {
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('audio_file');
@@ -620,12 +918,12 @@ function validateAudioFile(file) {
     const maxSize = 50 * 1024 * 1024; // 50MB
     
     if (!allowedTypes.includes(file.type) && !file.name.match(/\.(mp3|wav|flac|m4a|aac|ogg|webm)$/i)) {
-        VoiceLog.showToast('Please select a valid audio file (MP3, WAV, FLAC, M4A, AAC, OGG, WEBM)', 'error');
+        showToast('Please select a valid audio file (MP3, WAV, FLAC, M4A, AAC, OGG, WEBM)', 'error');
         return false;
     }
     
     if (file.size > maxSize) {
-        VoiceLog.showToast('File size must be less than 50MB', 'error');
+        showToast('File size must be less than 50MB', 'error');
         return false;
     }
     
@@ -642,11 +940,268 @@ function clearFileSelection() {
     uploadArea.style.display = 'block';
 }
 
+// Recording Functions
+let mediaRecorder = null;
+let audioChunks = [];
+let recordingStartTime = null;
+let recordingTimer = null;
+let audioContext = null;
+let analyser = null;
+let microphone = null;
+let dataArray = null;
+
+function initializeRecording() {
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    
+    recordBtn.addEventListener('click', startRecording);
+    stopBtn.addEventListener('click', stopRecording);
+    clearBtn.addEventListener('click', clearRecording);
+    
+    // Check if browser supports recording
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        recordBtn.disabled = true;
+        recordBtn.innerHTML = '<i class="bi bi-exclamation-triangle"></i><span>Recording not supported</span>';
+        showToast('Your browser does not support audio recording', 'error');
+    }
+}
+
+async function startRecording() {
+    try {
+        // Request microphone access
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 44100
+            } 
+        });
+        
+        // Initialize audio context for volume meter
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        microphone = audioContext.createMediaStreamSource(stream);
+        
+        analyser.fftSize = 256;
+        const bufferLength = analyser.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+        
+        microphone.connect(analyser);
+        
+        // Start recording
+        mediaRecorder = new MediaRecorder(stream, {
+            mimeType: 'audio/webm;codecs=opus'
+        });
+        
+        audioChunks = [];
+        recordingStartTime = Date.now();
+        
+        mediaRecorder.addEventListener('dataavailable', (event) => {
+            audioChunks.push(event.data);
+        });
+        
+        mediaRecorder.addEventListener('stop', () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            handleRecordingComplete(audioBlob);
+        });
+        
+        // Start recording and update UI
+        mediaRecorder.start();
+        updateRecordingUI(true);
+        startVolumeMeter();
+        startRecordingTimer();
+        
+        showToast('Recording started! Click stop when finished.', 'success');
+        
+    } catch (error) {
+        console.error('Error starting recording:', error);
+        showToast('Failed to start recording. Please check microphone permissions.', 'error');
+    }
+}
+
+function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        updateRecordingUI(false);
+        stopVolumeMeter();
+        stopRecordingTimer();
+        
+        // Stop all tracks to release microphone
+        if (mediaRecorder.stream) {
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        }
+        
+        showToast('Recording stopped!', 'success');
+    }
+}
+
+function handleRecordingComplete(audioBlob) {
+    const recordingPreview = document.getElementById('recordingPreview');
+    const recordingAudio = document.getElementById('recordingAudio');
+    const recordingDuration = document.getElementById('recordingDuration');
+    const recordingSize = document.getElementById('recordingSize');
+    
+    // Create audio URL and set duration
+    const audioUrl = URL.createObjectURL(audioBlob);
+    recordingAudio.src = audioUrl;
+    
+    // Get recording duration
+    const duration = (Date.now() - recordingStartTime) / 1000;
+    recordingDuration.textContent = formatDuration(duration);
+    
+    // Get file size
+    recordingSize.textContent = formatFileSize(audioBlob.size);
+    
+    // Show preview
+    recordingPreview.classList.remove('d-none');
+    
+    // Convert blob to file for form submission
+    const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
+    
+    // Replace the file input with the recording
+    const fileInput = document.getElementById('audio_file');
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(audioFile);
+    fileInput.files = dataTransfer.files;
+    
+    showToast('Recording complete! You can now create your post.', 'success');
+}
+
+function clearRecording() {
+    const recordingPreview = document.getElementById('recordingPreview');
+    const recordingAudio = document.getElementById('recordingAudio');
+    
+    // Clear preview
+    recordingPreview.classList.add('d-none');
+    recordingAudio.src = '';
+    
+    // Clear file input
+    const fileInput = document.getElementById('audio_file');
+    fileInput.value = '';
+    
+    // Reset recording state
+    audioChunks = [];
+    recordingStartTime = null;
+    
+    // Stop any ongoing recording
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        if (mediaRecorder.stream) {
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        }
+    }
+    
+    updateRecordingUI(false);
+    stopVolumeMeter();
+    stopRecordingTimer();
+}
+
+function updateRecordingUI(isRecording) {
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const statusIndicator = document.querySelector('.status-indicator');
+    const recordTime = document.getElementById('recordTime');
+    
+    if (isRecording) {
+        recordBtn.classList.add('d-none');
+        stopBtn.classList.remove('d-none');
+        clearBtn.classList.remove('d-none');
+        statusIndicator.classList.add('recording');
+        statusIndicator.innerHTML = '<i class="bi bi-mic"></i><span>Recording...</span>';
+        recordTime.textContent = '00:00';
+    } else {
+        recordBtn.classList.remove('d-none');
+        stopBtn.classList.add('d-none');
+        clearBtn.classList.add('d-none');
+        statusIndicator.classList.remove('recording');
+        statusIndicator.innerHTML = '<i class="bi bi-mic"></i><span>Ready to record</span>';
+        recordTime.textContent = '00:00';
+    }
+}
+
+function startVolumeMeter() {
+    if (!analyser) return;
+    
+    function updateVolume() {
+        if (analyser && dataArray) {
+            analyser.getByteFrequencyData(dataArray);
+            
+            // Calculate average volume
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+                sum += dataArray[i];
+            }
+            const average = sum / dataArray.length;
+            
+            // Update volume bar (0-100%)
+            const volumeBar = document.getElementById('volumeBar');
+            if (volumeBar) {
+                volumeBar.style.width = Math.min(average * 2, 100) + '%';
+            }
+        }
+        
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            requestAnimationFrame(updateVolume);
+        }
+    }
+    
+    updateVolume();
+}
+
+function stopVolumeMeter() {
+    const volumeBar = document.getElementById('volumeBar');
+    if (volumeBar) {
+        volumeBar.style.width = '0%';
+    }
+}
+
+function startRecordingTimer() {
+    recordingStartTime = Date.now();
+    recordingTimer = setInterval(() => {
+        const elapsed = Date.now() - recordingStartTime;
+        const seconds = Math.floor(elapsed / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        
+        const recordTime = document.getElementById('recordTime');
+        if (recordTime) {
+            recordTime.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+    }, 1000);
+}
+
+function stopRecordingTimer() {
+    if (recordingTimer) {
+        clearInterval(recordingTimer);
+        recordingTimer = null;
+    }
+}
+
+function formatDuration(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+// Form Submission
 function initializeFormSubmission() {
     const form = document.getElementById('createPostForm');
     const submitBtn = document.getElementById('submitBtn');
     
+    // Check which API provider is available
+    checkApiProvider();
+    
     form.addEventListener('submit', function(e) {
+        // Validate that we have either a file or recording
+        const fileInput = document.getElementById('audio_file');
+        if (!fileInput.files || fileInput.files.length === 0) {
+            e.preventDefault();
+            showToast('Please provide an audio file or record audio before creating a post.', 'error');
+            return;
+        }
+        
         const btnText = submitBtn.querySelector('.btn-text');
         const btnLoading = submitBtn.querySelector('.btn-loading');
         
@@ -658,11 +1213,96 @@ function initializeFormSubmission() {
         // If auto-process is enabled, show additional message
         const autoProcess = document.getElementById('auto_process').checked;
         if (autoProcess) {
-            VoiceLog.showToast('Processing may take 1-2 minutes for AI transcription and summary generation.', 'info');
+            showToast('Processing may take 1-2 minutes for AI transcription and summary generation.', 'info');
         }
+        
+        // Add form submission debugging
+        console.log('Form submitted with data:', {
+            title: document.getElementById('title').value,
+            privacy_level: document.getElementById('privacy_level').value,
+            auto_process: autoProcess,
+            audio_file: document.getElementById('audio_file').files[0]?.name || 'None'
+        });
     });
+    
+    // Check database health on page load
+    checkDatabaseHealth();
 }
 
+function checkDatabaseHealth() {
+    fetch('/api/db-health')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Database health check:', data);
+            if (data.status === 'unhealthy') {
+                showToast('Database health check failed. Check console for details.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Database health check failed:', error);
+            showToast('Database health check failed. Check console for details.', 'error');
+        });
+}
+
+function checkApiProvider() {
+    // Check which API provider is available
+    fetch('/api/ai-provider')
+        .then(response => response.json())
+        .then(data => {
+            const apiProvider = document.getElementById('apiProvider');
+            if (apiProvider && data.provider) {
+                apiProvider.textContent = data.name;
+                
+                // Update the processing info with provider-specific details
+                updateProcessingInfo(data);
+            } else if (apiProvider) {
+                apiProvider.textContent = 'None (Manual processing only)';
+                showApiWarning();
+            }
+        })
+        .catch(error => {
+            console.error('Error checking API provider:', error);
+            const apiProvider = document.getElementById('apiProvider');
+            if (apiProvider) {
+                apiProvider.textContent = 'Unknown';
+            }
+        });
+}
+
+function updateProcessingInfo(providerData) {
+    // Update processing info based on the provider
+    const processingInfo = document.querySelector('.processing-info');
+    if (processingInfo && providerData.provider) {
+        const firstInfoItem = processingInfo.querySelector('.info-item:first-child');
+        if (firstInfoItem) {
+            const icon = firstInfoItem.querySelector('i');
+            const text = firstInfoItem.querySelector('span');
+            
+            if (providerData.provider === 'gemini') {
+                icon.className = 'bi bi-google';
+                text.innerHTML = `Transcript generation using <strong>${providerData.name}</strong>`;
+            } else if (providerData.provider === 'openai') {
+                icon.className = 'bi bi-openai';
+                text.innerHTML = `Transcript generation using <strong>${providerData.name}</strong>`;
+            }
+        }
+    }
+}
+
+function showApiWarning() {
+    // Show warning if no API is configured
+    const alertDiv = document.querySelector('.alert-info');
+    if (alertDiv) {
+        alertDiv.className = 'alert alert-warning';
+        alertDiv.innerHTML = `
+            <i class="bi bi-exclamation-triangle"></i>
+            <strong>Warning:</strong> No AI API key configured. You can still create posts, but transcription and summary generation will not be available.
+            <br><small>Configure either OPENAI_API_KEY or GEMINI_API_KEY in your environment variables.</small>
+        `;
+    }
+}
+
+// Utility Functions
 function formatFileSize(bytes) {
     if (bytes === 0) return '0 Bytes';
     
@@ -671,6 +1311,37 @@ function formatFileSize(bytes) {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function showToast(message, type = 'info') {
+    // Simple toast implementation if VoiceLog.showToast is not available
+    if (typeof VoiceLog !== 'undefined' && VoiceLog.showToast) {
+        VoiceLog.showToast(message, type);
+    } else {
+        // Fallback toast
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'error' ? '#EF4444' : type === 'success' ? '#10B981' : '#3B82F6'};
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+            max-width: 300px;
+            word-wrap: break-word;
+        `;
+        toast.textContent = message;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
+    }
 }
 </script>
 {% endblock %}

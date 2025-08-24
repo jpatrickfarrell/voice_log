@@ -1,0 +1,466 @@
+{% extends "base.html" %}
+
+{% block title %}My Posts{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="my-posts-container">
+        <header class="posts-header">
+            <h1>My Voice Posts</h1>
+            <p class="subtitle">Manage and organize your voice posts</p>
+            <a href="{{ url_for('posts.create_post') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create New Post
+            </a>
+        </header>
+
+        {% if posts %}
+        <div class="posts-grid">
+            {% for post in posts %}
+            <div class="post-card {% if not post.is_published %}draft{% endif %}">
+                <div class="post-header">
+                    <h3 class="post-title">
+                        <a href="{{ url_for('posts.view_post', slug=post.slug) }}">{{ post.title }}</a>
+                    </h3>
+                    <div class="post-meta">
+                        <span class="post-date">
+                            {% if post.created_at is string %}
+                                {{ post.created_at }}
+                            {% else %}
+                                {{ post.created_at.strftime('%B %d, %Y') }}
+                            {% endif %}
+                        </span>
+                        <span class="post-duration">
+                            {% if post.format_duration %}
+                                {{ post.format_duration() }}
+                            {% else %}
+                                Unknown
+                            {% endif %}
+                        </span>
+                        <span class="post-privacy privacy-{{ post.privacy_level }}">
+                            {% if post.privacy_level == 'public' %}
+                                <i class="fas fa-globe"></i> Public
+                            {% elif post.privacy_level == 'unlisted' %}
+                                <i class="fas fa-link"></i> Unlisted
+                            {% else %}
+                                <i class="fas fa-lock"></i> Private
+                            {% endif %}
+                        </span>
+                        {% if not post.is_published %}
+                            <span class="post-status draft">
+                                <i class="fas fa-edit"></i> Draft
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="post-content">
+                    {% if post.summary and post.summary|length > 0 %}
+                    <p class="post-summary">{{ post.summary[:150] }}{% if post.summary|length > 150 %}...{% endif %}</p>
+                    {% endif %}
+                    
+                    <div class="post-audio">
+                        <audio controls preload="none" class="audio-element">
+                            {% if post.converted_mp3_path %}
+                                <source src="{{ url_for('posts.serve_audio', filename=post.converted_mp3_path) }}" type="audio/mpeg">
+                            {% endif %}
+                            <source src="{{ url_for('posts.serve_audio', filename=post.audio_filename) }}" type="audio/{{ post.audio_filename.split('.')[-1] }}">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                </div>
+
+                <div class="post-actions">
+                    <a href="{{ url_for('posts.view_post', slug=post.slug) }}" class="btn btn-outline btn-sm">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                    <a href="{{ url_for('posts.edit_post', slug=post.slug) }}" class="btn btn-outline btn-sm">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <button onclick="confirmDelete('{{ post.slug }}', '{{ post.title }}')" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+
+                {% if post.transcript and post.transcript|length > 0 %}
+                <div class="post-transcript">
+                    <details>
+                        <summary>Show Transcript</summary>
+                        <p>{{ post.transcript[:200] }}{% if post.transcript|length > 200 %}...{% endif %}</p>
+                    </details>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-microphone-slash"></i>
+            </div>
+            <h3>No Posts Yet</h3>
+            <p>You haven't created any voice posts yet. Start sharing your thoughts!</p>
+            <a href="{{ url_for('posts.create_post') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create Your First Post
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3>Confirm Deletion</h3>
+        <p id="deleteMessage">Are you sure you want to delete this post? This action cannot be undone.</p>
+        <div class="modal-actions">
+            <form id="deleteForm" method="POST" style="display: inline;">
+                <button type="submit" class="btn btn-danger">Delete Permanently</button>
+            </form>
+            <button type="button" class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.my-posts-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.posts-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.posts-header h1 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 2.5rem;
+    font-weight: 600;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 2rem;
+}
+
+.post-card {
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+}
+
+.post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.post-card.draft {
+    border-left: 4px solid var(--warning-color, #ffc107);
+    background: rgba(255, 193, 7, 0.05);
+}
+
+.post-header {
+    margin-bottom: 1rem;
+}
+
+.post-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.post-title a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.post-title a:hover {
+    color: var(--primary-color);
+}
+
+.post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.post-date, .post-duration {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.post-privacy {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.privacy-public {
+    background: rgba(40, 167, 69, 0.1);
+    color: var(--success-color, #28a745);
+}
+
+.privacy-unlisted {
+    background: rgba(255, 193, 7, 0.1);
+    color: var(--warning-color, #ffc107);
+}
+
+.privacy-private {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--danger-color, #dc3545);
+}
+
+.post-status.draft {
+    background: rgba(255, 193, 7, 0.1);
+    color: var(--warning-color, #ffc107);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.post-content {
+    margin-bottom: 1.5rem;
+}
+
+.post-summary {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.post-audio {
+    margin-bottom: 1rem;
+}
+
+.audio-element {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.post-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
+}
+
+.btn-outline:hover {
+    background: var(--bg-secondary);
+    border-color: var(--primary-color);
+}
+
+.btn-danger {
+    background: var(--danger-color, #dc3545);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: var(--danger-dark, #c82333);
+    transform: translateY(-1px);
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+.post-transcript {
+    border-top: 1px solid var(--border-light);
+    padding-top: 1rem;
+}
+
+.post-transcript summary {
+    cursor: pointer;
+    color: var(--primary-color);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.post-transcript p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--bg-main);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--border-light);
+}
+
+.modal-content h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.modal-content p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .my-posts-container {
+        padding: 1rem;
+    }
+    
+    .posts-header h1 {
+        font-size: 2rem;
+    }
+    
+    .posts-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .post-card {
+        padding: 1rem;
+    }
+    
+    .post-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .post-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn {
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+function confirmDelete(slug, title) {
+    const modal = document.getElementById('deleteModal');
+    const message = document.getElementById('deleteMessage');
+    const form = document.getElementById('deleteForm');
+    
+    message.textContent = `Are you sure you want to delete "${title}"? This action cannot be undone.`;
+    form.action = `/posts/delete/${slug}`;
+    
+    modal.style.display = 'flex';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

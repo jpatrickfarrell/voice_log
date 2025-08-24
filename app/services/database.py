@@ -23,9 +23,11 @@ def get_db(db_path):
 
 def init_database(db_path):
     """Initialize database with tables"""
+    print(f"Initializing database at: {db_path}")
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
     
     with get_db(db_path) as conn:
+        print("Creating users table...")
         # Users table
         conn.execute('''
             CREATE TABLE IF NOT EXISTS users (
@@ -39,7 +41,9 @@ def init_database(db_path):
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        print("Users table created/verified")
         
+        print("Creating voice_posts table...")
         # Voice posts table
         conn.execute('''
             CREATE TABLE IF NOT EXISTS voice_posts (
@@ -48,6 +52,7 @@ def init_database(db_path):
                 title TEXT NOT NULL,
                 slug TEXT UNIQUE NOT NULL,
                 audio_filename TEXT NOT NULL,
+                converted_mp3_path TEXT,
                 transcript TEXT,
                 summary TEXT,
                 duration_seconds REAL,
@@ -58,7 +63,17 @@ def init_database(db_path):
                 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
             )
         ''')
+        print("Voice_posts table created/verified")
         
+        # Add converted_mp3_path column if it doesn't exist (for existing databases)
+        try:
+            conn.execute('ALTER TABLE voice_posts ADD COLUMN converted_mp3_path TEXT')
+            print("Added converted_mp3_path column to existing voice_posts table")
+        except sqlite3.OperationalError:
+            # Column already exists
+            print("converted_mp3_path column already exists")
+        
+        print("Creating post_analytics table...")
         # Post analytics table
         conn.execute('''
             CREATE TABLE IF NOT EXISTS post_analytics (
@@ -70,18 +85,23 @@ def init_database(db_path):
                 FOREIGN KEY (post_id) REFERENCES voice_posts (id) ON DELETE CASCADE
             )
         ''')
+        print("Post_analytics table created/verified")
         
         # Create indexes
+        print("Creating indexes...")
         conn.execute('CREATE INDEX IF NOT EXISTS idx_voice_posts_user_id ON voice_posts (user_id)')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_voice_posts_slug ON voice_posts (slug)')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_voice_posts_privacy ON voice_posts (privacy_level)')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_voice_posts_published ON voice_posts (is_published)')
+        print("Indexes created/verified")
         
         # Create default admin user if not exists
+        print("Checking for default admin user...")
         conn.execute('''
             INSERT OR IGNORE INTO users (username, email, password_hash, is_admin)
             VALUES ('admin', 'admin@voicelog.com', 'pbkdf2:sha256:600000$default$4f5c8b9d0e1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e', TRUE)
         ''')
+        print("Database initialization complete!")
 
 def check_database_health(db_path):
     """Check database health and connectivity"""

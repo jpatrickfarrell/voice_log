@@ -1,0 +1,736 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Post - {{ post.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="edit-post-container">
+        <header class="edit-header">
+            <h1>Edit Voice Post</h1>
+            <p class="subtitle">Update your post details and settings</p>
+        </header>
+
+        <form method="POST" class="edit-form">
+            <div class="form-section">
+                <h3>Post Information</h3>
+                
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" value="{{ post.title }}" required 
+                           class="form-control" maxlength="100" placeholder="Enter post title">
+                    <small class="form-help">Maximum 100 characters</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="summary">Summary & Content</label>
+                    <div class="rich-text-editor">
+                        <div class="editor-toolbar">
+                            <button type="button" class="toolbar-btn" onclick="formatText('bold')" title="Bold">
+                                <i class="fas fa-bold"></i>
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="formatText('italic')" title="Italic">
+                                <i class="fas fa-italic"></i>
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="formatText('underline')" title="Underline">
+                                <i class="fas fa-underline"></i>
+                            </button>
+                            <div class="toolbar-separator"></div>
+                            <button type="button" class="toolbar-btn" onclick="formatText('h2')" title="Heading 2">
+                                <i class="fas fa-heading"></i> H2
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="formatText('h3')" title="Heading 3">
+                                <i class="fas fa-heading"></i> H3
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="formatText('h4')" title="Heading 4">
+                                <i class="fas fa-heading"></i> H4
+                            </button>
+                            <div class="toolbar-separator"></div>
+                            <button type="button" class="toolbar-btn" onclick="formatText('ul')" title="Bullet List">
+                                <i class="fas fa-list-ul"></i>
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="formatText('ol')" title="Numbered List">
+                                <i class="fas fa-list-ol"></i>
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="formatText('blockquote')" title="Quote">
+                                <i class="fas fa-quote-right"></i>
+                            </button>
+                            <div class="toolbar-separator"></div>
+                            <button type="button" class="toolbar-btn" onclick="formatText('link')" title="Insert Link">
+                                <i class="fas fa-link"></i>
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="formatText('code')" title="Code Block">
+                                <i class="fas fa-code"></i>
+                            </button>
+                        </div>
+                        <div id="summary-editor" class="editor-content" contenteditable="true" 
+                             data-placeholder="Write your summary and content here... Use the toolbar above to format your text with headings, lists, quotes, and other styling to create a full blog post.">
+                            {{ post.summary|safe if post.summary else '' }}
+                        </div>
+                        <textarea id="summary-input" name="summary" style="display: none;"></textarea>
+                        <small class="form-help">
+                            Use the toolbar to format your text. This field supports headings, lists, quotes, and other HTML formatting to create rich blog content.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Post Settings</h3>
+                
+                <div class="form-group">
+                    <label for="privacy_level">Privacy Level</label>
+                    <select id="privacy_level" name="privacy_level" class="form-control">
+                        <option value="public" {% if post.privacy_level == 'public' %}selected{% endif %}>Public</option>
+                        <option value="unlisted" {% if post.privacy_level == 'unlisted' %}selected{% endif %}>Unlisted</option>
+                        <option value="private" {% if post.privacy_level == 'private' %}selected{% endif %}>Private</option>
+                    </select>
+                    <small class="form-help">
+                        <strong>Public:</strong> Visible to everyone<br>
+                        <strong>Unlisted:</strong> Only accessible via direct link<br>
+                        <strong>Private:</strong> Only visible to you
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="is_published">Publish Status</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="is_published" name="is_published" 
+                               {% if post.is_published %}checked{% endif %} class="form-checkbox">
+                        <label for="is_published" class="checkbox-label">
+                            <span class="checkmark"></span>
+                            Publish this post
+                        </label>
+                    </div>
+                    <small class="form-help">Uncheck to save as draft</small>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Audio Information</h3>
+                
+                <div class="audio-preview">
+                    <h4>Current Audio</h4>
+                    <div class="audio-info">
+                        <div class="audio-details">
+                            <strong>File:</strong> {{ post.audio_filename }}<br>
+                            <strong>Duration:</strong> {{ post.format_duration() }}<br>
+                            {% if post.converted_mp3_path %}
+                                <strong>Format:</strong> MP3 (Converted)<br>
+                            {% else %}
+                                <strong>Format:</strong> {{ post.audio_filename.split('.')[-1].upper() }}<br>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="audio-player">
+                            <audio controls preload="metadata" class="audio-element">
+                                {% if post.converted_mp3_path %}
+                                    <source src="{{ url_for('posts.serve_audio', filename=post.converted_mp3_path) }}" type="audio/mpeg">
+                                {% endif %}
+                                <source src="{{ url_for('posts.serve_audio', filename=post.audio_filename) }}" type="audio/{{ post.audio_filename.split('.')[-1] }}">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if post.transcript %}
+            <div class="form-section">
+                <h3>Transcript</h3>
+                <div class="transcript-preview">
+                    <p>{{ post.transcript[:200] }}{% if post.transcript|length > 200 %}...{% endif %}</p>
+                    <small class="form-help">Transcript is automatically generated and cannot be edited here</small>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if post.summary %}
+            <div class="form-section">
+                <h3>Summary</h3>
+                <div class="summary-preview">
+                    <p>{{ post.summary[:200] }}{% if post.summary|length > 200 %}...{% endif %}</p>
+                    <small class="form-help">Summary is automatically generated and cannot be edited here</small>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <a href="{{ url_for('posts.view_post', slug=post.slug) }}" class="btn btn-outline">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="fas fa-trash"></i> Delete Post
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3>Confirm Deletion</h3>
+        <p>Are you sure you want to delete "{{ post.title }}"? This action cannot be undone.</p>
+        <div class="modal-actions">
+            <form method="POST" action="{{ url_for('posts.delete_post', slug=post.slug) }}" style="display: inline;">
+                <button type="submit" class="btn btn-danger">Delete Permanently</button>
+            </form>
+            <button type="button" class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.edit-post-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.edit-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.edit-header h1 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.form-section {
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.form-section h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+}
+
+.form-help {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.form-checkbox {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--primary-color);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.audio-preview {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    border: 1px solid var(--border-light);
+}
+
+.audio-preview h4 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.audio-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.audio-details {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.audio-player {
+    width: 100%;
+}
+
+.audio-element {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.transcript-preview, .summary-preview {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    border: 1px solid var(--border-light);
+}
+
+.transcript-preview p, .summary-preview p {
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
+}
+
+.btn-outline:hover {
+    background: var(--bg-secondary);
+    border-color: var(--primary-color);
+}
+
+.btn-danger {
+    background: var(--danger-color, #dc3545);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: var(--danger-dark, #c82333);
+    transform: translateY(-1px);
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--bg-main);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--border-light);
+}
+
+.modal-content h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.modal-content p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+/* Rich Text Editor Styles */
+.rich-text-editor {
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.editor-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-light);
+    flex-wrap: wrap;
+}
+
+.toolbar-btn {
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.toolbar-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.toolbar-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.toolbar-separator {
+    width: 1px;
+    height: 24px;
+    background: var(--border-light);
+    margin: 0 0.5rem;
+}
+
+.editor-content {
+    min-height: 200px;
+    max-height: 500px;
+    padding: 1rem;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow-y: auto;
+    outline: none;
+    font-family: inherit;
+}
+
+.editor-content:empty:before {
+    content: attr(data-placeholder);
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.editor-content:focus {
+    border-color: var(--primary-color);
+}
+
+.editor-content h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 1.5rem 0 1rem 0;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+}
+
+.editor-content h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.75rem 0;
+    color: var(--text-primary);
+}
+
+.editor-content h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1rem 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.editor-content ul, .editor-content ol {
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+}
+
+.editor-content li {
+    margin: 0.25rem 0;
+}
+
+.editor-content blockquote {
+    border-left: 4px solid var(--primary-color);
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+.editor-content code {
+    background: var(--bg-secondary);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.editor-content a {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.editor-content a:hover {
+    color: var(--primary-dark);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .edit-post-container {
+        padding: 1rem;
+    }
+    
+    .form-section {
+        padding: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn {
+        justify-content: center;
+    }
+    
+    .modal-content {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+}
+</style>
+
+<script>
+function confirmDelete() {
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Rich Text Editor Functionality
+function formatText(command) {
+    const editor = document.getElementById('summary-editor');
+    
+    switch(command) {
+        case 'bold':
+            document.execCommand('bold', false, null);
+            break;
+        case 'italic':
+            document.execCommand('italic', false, null);
+            break;
+        case 'underline':
+            document.execCommand('underline', false, null);
+            break;
+        case 'h2':
+            document.execCommand('formatBlock', false, '<h2>');
+            break;
+        case 'h3':
+            document.execCommand('formatBlock', false, '<h3>');
+            break;
+        case 'h4':
+            document.execCommand('formatBlock', false, '<h4>');
+            break;
+        case 'ul':
+            document.execCommand('insertUnorderedList', false, null);
+            break;
+        case 'ol':
+            document.execCommand('insertOrderedList', false, null);
+            break;
+        case 'blockquote':
+            document.execCommand('formatBlock', false, '<blockquote>');
+            break;
+        case 'link':
+            const url = prompt('Enter URL:');
+            if (url) {
+                document.execCommand('createLink', false, url);
+            }
+            break;
+        case 'code':
+            document.execCommand('formatBlock', false, '<pre>');
+            break;
+    }
+    
+    // Update active state of toolbar buttons
+    updateToolbarState();
+    editor.focus();
+}
+
+function updateToolbarState() {
+    const editor = document.getElementById('summary-editor');
+    const buttons = document.querySelectorAll('.toolbar-btn');
+    
+    buttons.forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Check current selection and update button states
+    if (document.queryCommandState('bold')) {
+        document.querySelector('[onclick="formatText(\'bold\')"]').classList.add('active');
+    }
+    if (document.queryCommandState('italic')) {
+        document.querySelector('[onclick="formatText(\'italic\')"]').classList.add('active');
+    }
+    if (document.queryCommandState('underline')) {
+        document.querySelector('[onclick="formatText(\'underline\')"]').classList.add('active');
+    }
+}
+
+// Sync editor content with hidden textarea before form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.edit-form');
+    const editor = document.getElementById('summary-editor');
+    const summaryInput = document.getElementById('summary-input');
+    const titleInput = document.getElementById('title');
+    
+    // Update hidden textarea when editor content changes
+    editor.addEventListener('input', function() {
+        summaryInput.value = editor.innerHTML;
+    });
+    
+    // Sync content on form submission
+    form.addEventListener('submit', function(e) {
+        // Update hidden textarea with current editor content
+        summaryInput.value = editor.innerHTML;
+        
+        if (!titleInput.value.trim()) {
+            e.preventDefault();
+            alert('Please enter a title for your post.');
+            titleInput.focus();
+            return;
+        }
+        
+        if (titleInput.value.trim().length > 100) {
+            e.preventDefault();
+            alert('Title must be 100 characters or less.');
+            titleInput.focus();
+            return;
+        }
+    });
+    
+    // Initialize editor with existing content
+    if (editor.innerHTML.trim() === '') {
+        editor.innerHTML = '';
+    }
+    
+    // Add keyboard shortcuts
+    editor.addEventListener('keydown', function(e) {
+        if (e.ctrlKey || e.metaKey) {
+            switch(e.key) {
+                case 'b':
+                    e.preventDefault();
+                    formatText('bold');
+                    break;
+                case 'i':
+                    e.preventDefault();
+                    formatText('italic');
+                    break;
+                case 'u':
+                    e.preventDefault();
+                    formatText('underline');
+                    break;
+            }
+        }
+    });
+    
+    // Update toolbar state on selection change
+    editor.addEventListener('mouseup', updateToolbarState);
+    editor.addEventListener('keyup', updateToolbarState);
+});
+</script>
+{% endblock %}

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models.user import User
 from werkzeug.security import check_password_hash
@@ -72,10 +72,14 @@ def register():
             errors.append('Passwords do not match')
         
         # Check if user already exists
+        current_app.logger.info(f"Checking if username exists: {username}")
         if User.get_by_username(username):
+            current_app.logger.info(f"Username already exists: {username}")
             errors.append('Username already exists')
         
+        current_app.logger.info(f"Checking if email exists: {email}")
         if User.get_by_email(email):
+            current_app.logger.info(f"Email already exists: {email}")
             errors.append('Email already registered')
         
         if errors:

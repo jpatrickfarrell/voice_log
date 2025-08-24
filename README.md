@@ -1,15 +1,32 @@
 # Voice Log
 
-Transform your voice into listenable blog posts with automatic transcription, AI-powered summaries, and instant publishing.
+A modern voice blogging platform that transforms audio recordings into engaging, searchable blog posts with AI-powered transcription and summarization.
 
 ## Features
 
-🎙️ **Record Anywhere** - Upload audio from any device  
-📝 **Auto Transcription** - AI-powered speech-to-text using OpenAI Whisper  
-🤖 **Smart Summaries** - Generate compelling summaries automatically  
-🔗 **Instant Publishing** - Get public permalinks immediately  
-🔒 **Privacy Controls** - Public, unlisted, or private posts  
-📱 **Mobile Optimized** - Perfect for recording on your phone  
+- 🎤 **Voice Recording**: Record audio directly in the browser or upload audio files
+- 🤖 **AI Transcription**: Automatic speech-to-text using OpenAI Whisper or Google Gemini
+- ✨ **Smart Summaries**: AI-generated summaries and titles for your voice posts
+- 🔒 **Privacy Controls**: Public, unlisted, or private post visibility
+- 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
+- 📊 **Analytics**: Track views and plays for your voice posts
+- 🎵 **Audio Player**: Built-in audio player with download functionality
+
+## AI Providers
+
+Voice Log supports two AI providers for transcription and content generation:
+
+### OpenAI (Default)
+- **Transcription**: OpenAI Whisper API
+- **Summary/Title**: GPT-3.5-turbo
+- **Environment Variable**: `OPENAI_API_KEY`
+
+### Google Gemini
+- **Transcription**: Gemini 1.5 Flash (audio input)
+- **Summary/Title**: Gemini 1.5 Flash (text generation)
+- **Environment Variable**: `GEMINI_API_KEY`
+
+**Priority**: If both API keys are configured, Gemini will be used by default. You can configure either or both providers.
 
 ## Quick Start
 
@@ -24,7 +41,7 @@ Transform your voice into listenable blog posts with automatic transcription, AI
 2. **Set up environment**
    ```bash
    cp .env.example .env
-   # Edit .env with your configuration (especially OPENAI_API_KEY for AI features)
+   # Edit .env with your configuration (especially API keys for AI features)
    ```
 
 3. **Start the application**
@@ -68,7 +85,9 @@ Transform your voice into listenable blog posts with automatic transcription, AI
 
 ```bash
 # OpenAI API Key (for transcription and summaries)
+# AI Provider Configuration (configure at least one)
 OPENAI_API_KEY=your-openai-api-key-here
+GEMINI_API_KEY=your-google-gemini-api-key-here
 
 # Flask secret key (change in production)
 SECRET_KEY=your-secret-key-here

@@ -1,18 +1,138 @@
 import openai
 import os
+import requests
 from flask import current_app
 
 class TranscriptionService:
     @staticmethod
+    def _get_api_provider():
+        """Determine which API provider to use based on available keys"""
+        openai_key = os.environ.get('OPENAI_API_KEY')
+        gemini_key = os.environ.get('GEMINI_API_KEY')
+        
+        if gemini_key:
+            return 'gemini'
+        elif openai_key:
+            return 'openai'
+        else:
+            return None
+    
+    @staticmethod
     def transcribe_audio(audio_file_path):
+        """Transcribe audio file using available API provider"""
+        provider = TranscriptionService._get_api_provider()
+        
+        if not provider:
+            return None, "No API key configured (neither OPENAI_API_KEY nor GEMINI_API_KEY)"
+        
+        if provider == 'gemini':
+            return TranscriptionService._transcribe_with_gemini(audio_file_path)
+        else:
+            return TranscriptionService._transcribe_with_openai(audio_file_path)
+    
+    @staticmethod
+    def _transcribe_with_gemini(audio_file_path):
+        """Transcribe audio file using Google Gemini API"""
+        api_key = os.environ.get('GEMINI_API_KEY')
+        
+        try:
+            current_app.logger.info("Using Google Gemini API for transcription")
+            
+            # Read audio file and convert to base64
+            import base64
+            with open(audio_file_path, 'rb') as audio_file:
+                audio_data = audio_file.read()
+                audio_base64 = base64.b64encode(audio_data).decode('utf-8')
+            
+            # Determine file type from extension
+            file_extension = audio_file_path.lower().split('.')[-1]
+            mime_type = {
+                'mp3': 'audio/mpeg',
+                'wav': 'audio/wav',
+                'm4a': 'audio/mp4',
+                'webm': 'audio/webm',
+                'ogg': 'audio/ogg',
+                'flac': 'audio/flac'
+            }.get(file_extension, 'audio/mpeg')
+            
+            # Prepare the request to Gemini API
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+            
+            payload = {
+                "contents": [{
+                    "parts": [
+                        {
+                            "text": "Please transcribe this audio file accurately. Return only the transcript text without any additional formatting or commentary."
+                        },
+                        {
+                            "inline_data": {
+                                "mime_type": mime_type,
+                                "data": audio_base64
+                            }
+                        }
+                    ]
+                }],
+                "generationConfig": {
+                    "temperature": 0.1,
+                    "topK": 1,
+                    "topP": 1,
+                    "maxOutputTokens": 8192
+                }
+            }
+            
+            response = requests.post(url, json=payload, timeout=120)
+            response.raise_for_status()
+            
+            result = response.json()
+            
+            if 'candidates' in result and len(result['candidates']) > 0:
+                transcript = result['candidates'][0]['content']['parts'][0]['text']
+                current_app.logger.info("Gemini transcription successful")
+                return transcript.strip(), None
+            else:
+                current_app.logger.error("Gemini API returned no candidates")
+                return None, "Gemini API returned no transcription result"
+                
+        except requests.exceptions.RequestException as e:
+            current_app.logger.error(f"Gemini API request error: {str(e)}")
+            return None, f"Gemini API request error: {str(e)}"
+        except Exception as e:
+            current_app.logger.error(f"Gemini transcription error: {str(e)}")
+            current_app.logger.error(f"Error type: {type(e)}")
+            import traceback
+            current_app.logger.error(f"Traceback: {traceback.format_exc()}")
+            return None, f"Gemini transcription error: {str(e)}"
+    
+    @staticmethod
+    def _transcribe_with_openai(audio_file_path):
         """Transcribe audio file using OpenAI Whisper API"""
         api_key = os.environ.get('OPENAI_API_KEY')
         
-        if not api_key:
-            return None, "OpenAI API key not configured"
-        
         try:
-            client = openai.OpenAI(api_key=api_key)
+            current_app.logger.info("Using OpenAI API for transcription")
+            
+            # Debug: Check OpenAI library version
+            current_app.logger.info(f"OpenAI library version: {openai.__version__}")
+            
+            # Debug: Check for any proxy-related environment variables
+            proxy_vars = {k: v for k, v in os.environ.items() if 'proxy' in k.lower() or 'PROXY' in k}
+            if proxy_vars:
+                current_app.logger.warning(f"Proxy environment variables detected: {proxy_vars}")
+            
+            # Try to create client with minimal configuration
+            try:
+                client = openai.OpenAI(
+                    api_key=api_key,
+                    timeout=60.0
+                )
+                current_app.logger.info("OpenAI client created successfully with timeout")
+            except TypeError as e:
+                if 'proxies' in str(e):
+                    # Fallback: create client without any additional parameters
+                    current_app.logger.warning("Proxies parameter detected, creating client without additional config")
+                    client = openai.OpenAI(api_key=api_key)
+                else:
+                    raise e
             
             with open(audio_file_path, 'rb') as audio_file:
                 transcript = client.audio.transcriptions.create(
@@ -24,25 +144,108 @@ class TranscriptionService:
             return transcript, None
             
         except openai.OpenAIError as e:
+            current_app.logger.error(f"OpenAI API error: {str(e)}")
             return None, f"OpenAI API error: {str(e)}"
         except FileNotFoundError:
+            current_app.logger.error(f"Audio file not found: {audio_file_path}")
             return None, "Audio file not found"
         except Exception as e:
+            current_app.logger.error(f"Transcription error: {str(e)}")
+            current_app.logger.error(f"Error type: {type(e)}")
+            import traceback
+            current_app.logger.error(f"Traceback: {traceback.format_exc()}")
             return None, f"Transcription error: {str(e)}"
     
     @staticmethod
     def generate_summary(transcript):
-        """Generate summary from transcript using OpenAI GPT"""
-        api_key = os.environ.get('OPENAI_API_KEY')
+        """Generate summary from transcript using available API provider"""
+        provider = TranscriptionService._get_api_provider()
         
-        if not api_key:
-            return None, "OpenAI API key not configured"
+        if not provider:
+            return None, "No API key configured (neither OPENAI_API_KEY nor GEMINI_API_KEY)"
         
         if not transcript or len(transcript.strip()) < 50:
             return "Brief voice note", None
         
+        if provider == 'gemini':
+            return TranscriptionService._generate_summary_with_gemini(transcript)
+        else:
+            return TranscriptionService._generate_summary_with_openai(transcript)
+    
+    @staticmethod
+    def _generate_summary_with_gemini(transcript):
+        """Generate summary using Google Gemini API"""
+        api_key = os.environ.get('GEMINI_API_KEY')
+        
         try:
-            client = openai.OpenAI(api_key=api_key)
+            current_app.logger.info("Using Google Gemini API for summary generation")
+            
+            prompt = f"""Create a concise, engaging summary of this voice note transcript. The summary should:
+1. Be 1-3 sentences maximum
+2. Capture the main topic or key insight
+3. Be written in an engaging, blog-style tone
+4. Work well as a preview for readers
+
+Transcript:
+{transcript}
+
+Summary:"""
+            
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+            
+            payload = {
+                "contents": [{
+                    "parts": [{"text": prompt}]
+                }],
+                "generationConfig": {
+                    "temperature": 0.7,
+                    "topK": 1,
+                    "topP": 1,
+                    "maxOutputTokens": 100
+                }
+            }
+            
+            response = requests.post(url, json=payload, timeout=60)
+            response.raise_for_status()
+            
+            result = response.json()
+            
+            if 'candidates' in result and len(result['candidates']) > 0:
+                summary = result['candidates'][0]['content']['parts'][0]['text']
+                current_app.logger.info("Gemini summary generation successful")
+                return summary.strip(), None
+            else:
+                current_app.logger.error("Gemini API returned no candidates for summary")
+                return None, "Gemini API returned no summary result"
+                
+        except requests.exceptions.RequestException as e:
+            current_app.logger.error(f"Gemini API request error: {str(e)}")
+            return None, f"Gemini API request error: {str(e)}"
+        except Exception as e:
+            current_app.logger.error(f"Gemini summary generation error: {str(e)}")
+            return None, f"Gemini summary generation error: {str(e)}"
+    
+    @staticmethod
+    def _generate_summary_with_openai(transcript):
+        """Generate summary using OpenAI GPT"""
+        api_key = os.environ.get('OPENAI_API_KEY')
+        
+        try:
+            current_app.logger.info("Using OpenAI API for summary generation")
+            
+            # Try to create client with minimal configuration
+            try:
+                client = openai.OpenAI(
+                    api_key=api_key,
+                    timeout=60.0
+                )
+            except TypeError as e:
+                if 'proxies' in str(e):
+                    # Fallback: create client without any additional parameters
+                    current_app.logger.warning("Proxies parameter detected in summary generation, creating client without additional config")
+                    client = openai.OpenAI(api_key=api_key)
+                else:
+                    raise e
             
             prompt = f"""Create a concise, engaging summary of this voice note transcript. The summary should:
 1. Be 1-3 sentences maximum
@@ -72,17 +275,104 @@ Summary:"""
     
     @staticmethod
     def generate_title(transcript, max_length=60):
-        """Generate a compelling title from transcript"""
-        api_key = os.environ.get('OPENAI_API_KEY')
+        """Generate a compelling title from transcript using available API provider"""
+        provider = TranscriptionService._get_api_provider()
         
-        if not api_key:
+        if not provider:
             return "Voice Note", None
         
         if not transcript or len(transcript.strip()) < 20:
             return "Quick Voice Note", None
         
+        if provider == 'gemini':
+            return TranscriptionService._generate_title_with_gemini(transcript, max_length)
+        else:
+            return TranscriptionService._generate_title_with_openai(transcript, max_length)
+    
+    @staticmethod
+    def _generate_title_with_gemini(transcript, max_length=60):
+        """Generate title using Google Gemini API"""
+        api_key = os.environ.get('GEMINI_API_KEY')
+        
         try:
-            client = openai.OpenAI(api_key=api_key)
+            current_app.logger.info("Using Google Gemini API for title generation")
+            
+            prompt = f"""Create a compelling, concise title for this voice note transcript. The title should:
+1. Be {max_length} characters or less
+2. Capture the main topic or insight
+3. Be engaging and clickable
+4. Avoid generic words like "Voice Note" unless necessary
+
+Transcript:
+{transcript}
+
+Title:"""
+            
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+            
+            payload = {
+                "contents": [{
+                    "parts": [{"text": prompt}]
+                }],
+                "generationConfig": {
+                    "temperature": 0.7,
+                    "topK": 1,
+                    "topP": 1,
+                    "maxOutputTokens": 30
+                }
+            }
+            
+            response = requests.post(url, json=payload, timeout=60)
+            response.raise_for_status()
+            
+            result = response.json()
+            
+            if 'candidates' in result and len(result['candidates']) > 0:
+                title = result['candidates'][0]['content']['parts'][0]['text']
+                current_app.logger.info("Gemini title generation successful")
+                
+                # Clean up title
+                title = title.strip()
+                if title.startswith('"') and title.endswith('"'):
+                    title = title[1:-1]
+                
+                # Truncate if too long
+                if len(title) > max_length:
+                    title = title[:max_length-3] + "..."
+                
+                return title, None
+            else:
+                current_app.logger.error("Gemini API returned no candidates for title")
+                return None, "Gemini API returned no title result"
+                
+        except requests.exceptions.RequestException as e:
+            current_app.logger.error(f"Gemini API request error: {str(e)}")
+            return None, f"Gemini API request error: {str(e)}"
+        except Exception as e:
+            current_app.logger.error(f"Gemini title generation error: {str(e)}")
+            return None, f"Gemini title generation error: {str(e)}"
+    
+    @staticmethod
+    def _generate_title_with_openai(transcript, max_length=60):
+        """Generate title using OpenAI GPT"""
+        api_key = os.environ.get('OPENAI_API_KEY')
+        
+        try:
+            current_app.logger.info("Using OpenAI API for title generation")
+            
+            # Try to create client with minimal configuration
+            try:
+                client = openai.OpenAI(
+                    api_key=api_key,
+                    timeout=60.0
+                )
+            except TypeError as e:
+                if 'proxies' in str(e):
+                    # Fallback: create client without any additional parameters
+                    current_app.logger.warning("Proxies parameter detected in title generation, creating client without additional config")
+                    client = openai.OpenAI(api_key=api_key)
+                else:
+                    raise e
             
             prompt = f"""Create a compelling, concise title for this voice note transcript. The title should:
 1. Be {max_length} characters or less
@@ -115,7 +405,7 @@ Title:"""
             return title, None
             
         except openai.OpenAIError as e:
-            return None, f"OpenAI API error: {str(e)}"
+            return None, f"Title generation error: {str(e)}"
         except Exception as e:
             return None, f"Title generation error: {str(e)}"
 

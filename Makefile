@@ -84,7 +84,7 @@ native-init: ## Set up native development environment
 	@echo "Setting up native Voice Log development environment..."
 	@if [ ! -d "venv" ]; then \
 		echo "Creating virtual environment..."; \
-		python3 -m venv venv; \
+		python3 -m venv venv || python3.10 -m venv venv || python3.9 -m venv venv || python3 -m venv venv; \
 	fi
 	@echo "Activating virtual environment and installing dependencies..."
 	@. venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt

@@ -182,16 +182,46 @@ class TranscriptionService:
         try:
             current_app.logger.info("Using Google Gemini API for summary generation")
             
-            prompt = f"""Create a concise, engaging summary of this voice note transcript. The summary should:
-1. Be 1-3 sentences maximum
-2. Capture the main topic or key insight
-3. Be written in an engaging, blog-style tone
-4. Work well as a preview for readers
-
-Transcript:
-{transcript}
-
-Summary:"""
+            # Determine if this should be a short or long post based on transcript length
+            word_count = len(transcript.split())
+            is_short_post = word_count < 100  # Roughly 30 seconds of speech
+            
+            if is_short_post:
+                prompt = f"""Create a brief blog post summary for a short voice note.
+                
+                Transcript: {transcript}
+                
+                Please create a concise summary that includes:
+                - A brief description of the main topic
+                - 2-3 key points or insights
+                
+                Keep it brief and focused, suitable for a short voice note.
+                Format it nicely with HTML tags for better readability."""
+            else:
+                prompt = f"""Create a comprehensive blog post summary with structured sections.
+                
+                Transcript: {transcript}
+                
+                Please create a well-structured summary that includes:
+                
+                <h2>Key Points</h2>
+                <ul>
+                <li>Extract 3-5 main insights or takeaways</li>
+                <li>Focus on actionable or important information</li>
+                </ul>
+                
+                <h2>Main Content</h2>
+                Break the content into 3-5 logical sections with headers like:
+                <h3>Getting Started / Introduction</h3>
+                <h3>Core Concepts / Main Ideas</h3>
+                <h3>Key Insights / Important Points</h3>
+                <h3>Practical Applications / Examples</h3>
+                <h3>Moving Forward / Conclusion</h3>
+                
+                <h2>Summary</h2>
+                A brief wrap-up of the main message
+                
+                Make it engaging and easy to read, formatted as a professional blog post with proper HTML structure."""
             
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
             
@@ -203,7 +233,7 @@ Summary:"""
                     "temperature": 0.7,
                     "topK": 1,
                     "topP": 1,
-                    "maxOutputTokens": 100
+                    "maxOutputTokens": 800
                 }
             }
             
@@ -249,21 +279,51 @@ Summary:"""
                 else:
                     raise e
             
-            prompt = f"""Create a concise, engaging summary of this voice note transcript. The summary should:
-1. Be 1-3 sentences maximum
-2. Capture the main topic or key insight
-3. Be written in an engaging, blog-style tone
-4. Work well as a preview for readers
-
-Transcript:
-{transcript}
-
-Summary:"""
+            # Determine if this should be a short or long post based on transcript length
+            word_count = len(transcript.split())
+            is_short_post = word_count < 100  # Roughly 30 seconds of speech
+            
+            if is_short_post:
+                prompt = f"""Create a brief blog post summary for a short voice note.
+                
+                Transcript: {transcript}
+                
+                Please create a concise summary that includes:
+                - A brief description of the main topic
+                - 2-3 key points or insights
+                
+                Keep it brief and focused, suitable for a short voice note.
+                Format it nicely with HTML tags for better readability."""
+            else:
+                prompt = f"""Create a comprehensive blog post summary with structured sections.
+                
+                Transcript: {transcript}
+                
+                Please create a well-structured summary that includes:
+                
+                <h2>Key Points</h2>
+                <ul>
+                <li>Extract 3-5 main insights or takeaways</li>
+                <li>Focus on actionable or important information</li>
+                </ul>
+                
+                <h2>Main Content</h2>
+                Break the content into 3-5 logical sections with headers like:
+                <h3>Getting Started / Introduction</h3>
+                <h3>Core Concepts / Main Ideas</h3>
+                <h3>Key Insights / Important Points</h3>
+                <h3>Practical Applications / Examples</h3>
+                <h3>Moving Forward / Conclusion</h3>
+                
+                <h2>Summary</h2>
+                A brief wrap-up of the main message
+                
+                Make it engaging and easy to read, formatted as a professional blog post with proper HTML structure."""
             
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=100,
+                max_tokens=800,
                 temperature=0.7
             )
             

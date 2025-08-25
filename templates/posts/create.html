@@ -247,13 +247,7 @@
                 </button>
                 
                 <button type="submit" class="btn btn-primary" id="submitBtn">
-                    <span class="btn-text">
-                        <i class="bi bi-plus-circle"></i> Create Post
-                    </span>
-                    <span class="btn-loading d-none">
-                        <span class="spinner-border spinner-border-sm me-2"></span>
-                        Creating...
-                    </span>
+                    <i class="bi bi-plus-circle"></i> Create Post
                 </button>
             </div>
         </form>
@@ -1408,18 +1402,10 @@ function initializeFormSubmission() {
             return;
         }
         
-        const btnText = submitBtn.querySelector('.btn-text');
-        const btnLoading = submitBtn.querySelector('.btn-loading');
-        
-        // Show loading state
-        btnText.classList.add('d-none');
-        btnLoading.classList.remove('d-none');
-        submitBtn.disabled = true;
-        
-        // If auto-process is enabled, show additional message
+        // If auto-process is enabled, show message about redirecting to processing page
         const autoProcess = document.getElementById('auto_process').checked;
         if (autoProcess) {
-            showToast('Processing may take 1-2 minutes for AI transcription and summary generation.', 'info');
+            showToast('Redirecting to processing page...', 'info');
         }
         
         // Add form submission debugging
@@ -1437,13 +1423,9 @@ function initializeFormSubmission() {
 
 async function combineRecordingsAndSubmit() {
     const submitBtn = document.getElementById('submitBtn');
-    const btnText = submitBtn.querySelector('.btn-text');
-    const btnLoading = submitBtn.querySelector('.btn-loading');
     
     try {
-        // Show loading state
-        btnText.classList.add('d-none');
-        btnLoading.classList.remove('d-none');
+        // Disable button during processing
         submitBtn.disabled = true;
         
         showToast('Combining recording segments...', 'info');
@@ -1474,8 +1456,6 @@ async function combineRecordingsAndSubmit() {
         showToast('Failed to combine recordings. Please try again.', 'error');
         
         // Reset button state
-        btnText.classList.remove('d-none');
-        btnLoading.classList.add('d-none');
         submitBtn.disabled = false;
     }
 }

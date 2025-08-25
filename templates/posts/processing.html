@@ -100,7 +100,7 @@
             
             <div class="auto-refresh-info">
                 <i class="bi bi-arrow-clockwise"></i>
-                <span>Processing in progress...</span>
+                <span>AI processing in progress...</span>
             </div>
         </div>
     </div>
@@ -334,7 +334,7 @@
 </style>
 
 <script>
-// Simple processing logic
+// Simple processing display - AI processing is already complete
 let currentStep = 1;
 const totalSteps = 4;
 
@@ -357,17 +357,36 @@ function updateStep(stepNumber) {
     }
 }
 
-// Start processing when page loads
+// Start processing display when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    // Simulate step progression
-    setTimeout(() => updateStep(2), 2000);
-    setTimeout(() => updateStep(3), 5000);
-    setTimeout(() => updateStep(4), 8000);
+    // Simulate step progression to show the beautiful interface
+    setTimeout(() => updateStep(2), 1000);
+    setTimeout(() => updateStep(3), 2500);
+    setTimeout(() => updateStep(4), 4000);
     
-    // After completion, redirect to dashboard
+    // After showing the beautiful interface, redirect to the final post
     setTimeout(() => {
-        window.location.href = '/posts/my-posts';
-    }, 10000);
+        // Get the post slug from the URL path
+        const pathParts = window.location.pathname.split('/');
+        const postId = pathParts[pathParts.length - 1];
+        
+        // Redirect to the post page using the post ID to get the slug
+        fetch(`/posts/api/get-post-slug/${postId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.slug) {
+                    window.location.href = `/posts/${data.slug}`;
+                } else {
+                    // Fallback to my-posts if we can't get the slug
+                    window.location.href = '/posts/my-posts';
+                }
+            })
+            .catch(error => {
+                console.error('Error getting post slug:', error);
+                // Fallback to my-posts
+                window.location.href = '/posts/my-posts';
+            });
+    }, 6000);
 });
 </script>
 {% endblock %}

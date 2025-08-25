@@ -14,43 +14,76 @@ def processing_post(post_id):
     """Show processing page while AI is working on the post"""
     current_app.logger.info(f"Processing page requested for post_id: {post_id}")
     
-    post = VoicePost.get_by_id(post_id)
-    if not post:
-        current_app.logger.error(f"Post not found for ID: {post_id}")
-        abort(404)
-    
-    if post.user_id != current_user.id:
-        current_app.logger.error(f"User {current_user.id} not authorized to access post {post_id}")
-        abort(404)
-    
-    current_app.logger.info(f"Rendering processing page for post: {post.id}, slug: {post.slug}")
-    current_app.logger.info(f"Post object attributes: {post.__dict__}")
-    
-    return render_template('posts/processing.html', post=post)
+    try:
+        post = VoicePost.get_by_id(post_id)
+        current_app.logger.info(f"VoicePost.get_by_id returned: {post}")
+        
+        if not post:
+            current_app.logger.error(f"Post not found for ID: {post_id}")
+            abort(404)
+        
+        if post.user_id != current_user.id:
+            current_app.logger.error(f"User {current_user.id} not authorized to access post {post_id}")
+            abort(404)
+        
+        current_app.logger.info(f"Rendering processing page for post: {post.id}, slug: {post.slug}")
+        current_app.logger.info(f"Post object type: {type(post)}")
+        current_app.logger.info(f"Post object attributes: {list(post.__dict__.keys())}")
+        
+        # Verify critical attributes exist
+        if not hasattr(post, 'id') or not hasattr(post, 'slug'):
+            current_app.logger.error(f"Post missing critical attributes: id={hasattr(post, 'id')}, slug={hasattr(post, 'slug')}")
+            abort(500, description="Post object is missing required attributes")
+        
+        return render_template('posts/processing.html', post=post)
+        
+    except Exception as e:
+        current_app.logger.error(f"Exception in processing_post for post_id {post_id}: {str(e)}")
+        import traceback
+        current_app.logger.error(f"Traceback: {traceback.format_exc()}")
+        abort(500, description="Error loading post")
 
 @posts_bp.route('/api/process-post/<int:post_id>', methods=['POST'])
 @login_required
 def process_post_background(post_id):
     """Background endpoint to process post with AI"""
+    current_app.logger.info(f"Starting AI processing for post {post_id}")
+    
     post = VoicePost.get_by_id(post_id)
-    if not post or post.user_id != current_user.id:
+    if not post:
+        current_app.logger.error(f"Post {post_id} not found")
         return jsonify({'error': 'Post not found'}), 404
+    
+    if post.user_id != current_user.id:
+        current_app.logger.error(f"User {current_user.id} not authorized to process post {post_id}")
+        return jsonify({'error': 'Not authorized'}), 403
     
     try:
         # Get user's AI training data
         user_ai_bio = current_user.ai_bio if hasattr(current_user, 'ai_bio') else None
         user_writing_samples = current_user.ai_writing_samples if hasattr(current_user, 'ai_writing_samples') else None
         
+        current_app.logger.info(f"Processing post {post_id} with AI training data: bio={bool(user_ai_bio)}, samples={bool(user_writing_samples)}")
+        
         # Get audio file path
         filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], post.audio_filename)
+        current_app.logger.info(f"Audio file path: {filepath}")
+        
+        if not os.path.exists(filepath):
+            current_app.logger.error(f"Audio file not found: {filepath}")
+            return jsonify({'error': 'Audio file not found'}), 500
         
         # Process with AI
+        current_app.logger.info(f"Calling TranscriptionService.process_audio_complete for post {post_id}")
         transcript, gen_title, summary, error = TranscriptionService.process_audio_complete(
             filepath, user_ai_bio, user_writing_samples
         )
         
         if error:
+            current_app.logger.error(f"AI processing error for post {post_id}: {error}")
             return jsonify({'error': error}), 500
+        
+        current_app.logger.info(f"AI processing successful for post {post_id}. Transcript length: {len(transcript) if transcript else 0}, Summary length: {len(summary) if summary else 0}")
         
         # Update post with AI-generated content
         post.update(
@@ -61,6 +94,9 @@ def process_post_background(post_id):
         # Update title if it was auto-generated from filename
         if post.title == os.path.splitext(post.audio_filename)[0]:
             post.update(title=gen_title)
+            current_app.logger.info(f"Updated title for post {post_id} to: {gen_title}")
+        
+        current_app.logger.info(f"Successfully processed post {post_id} with slug: {post.slug}")
         
         return jsonify({
             'success': True,
@@ -69,8 +105,28 @@ def process_post_background(post_id):
         })
         
     except Exception as e:
-        current_app.logger.error(f"Error processing post {post_id}: {str(e)}")
+        current_app.logger.error(f"Exception during AI processing for post {post_id}: {str(e)}")
+        import traceback
+        current_app.logger.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({'error': str(e)}), 500
+
+@posts_bp.route('/api/get-post-slug/<int:post_id>')
+@login_required
+def get_post_slug(post_id):
+    """Get post slug for redirect purposes"""
+    try:
+        post = VoicePost.get_by_id(post_id)
+        if not post or post.user_id != current_user.id:
+            return jsonify({'success': False, 'error': 'Post not found or not authorized'}), 404
+        
+        return jsonify({
+            'success': True,
+            'slug': post.slug
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error getting post slug for post {post_id}: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @posts_bp.route('/create', methods=['GET', 'POST'])
 @login_required
@@ -111,20 +167,49 @@ def create_post():
         else:
             generated_title = title
         
-        # Create post first (without transcript/summary)
+        # Process transcript and summary if auto_process is enabled
+        transcript = None
+        summary = None
+        generated_title = title
+        
+        if auto_process:
+            try:
+                # Get user's AI training data
+                user_ai_bio = current_user.ai_bio if hasattr(current_user, 'ai_bio') else None
+                user_writing_samples = current_user.ai_writing_samples if hasattr(current_user, 'ai_writing_samples') else None
+                
+                transcript, gen_title, summary, error = TranscriptionService.process_audio_complete(
+                    filepath, user_ai_bio, user_writing_samples
+                )
+                if error:
+                    flash(f'Processing warning: {error}', 'warning')
+                else:
+                    # Use generated title if no manual title provided
+                    if not title and gen_title:
+                        generated_title = gen_title
+            except Exception as e:
+                flash(f'Processing failed: {str(e)}', 'warning')
+        
+        # Use filename as title if still no title
+        if not generated_title:
+            generated_title = os.path.splitext(file.filename)[0]
+        
+        # Create post
         try:
             current_app.logger.info(f"Attempting to create post for user {current_user.id}")
             current_app.logger.info(f"Title: {generated_title}")
             current_app.logger.info(f"Audio filename: {filename}")
             current_app.logger.info(f"Duration: {duration}")
             current_app.logger.info(f"Privacy level: {privacy_level}")
+            current_app.logger.info(f"Transcript: {transcript[:100] if transcript else 'None'}...")
+            current_app.logger.info(f"Summary: {summary[:100] if summary else 'None'}...")
             
             post = VoicePost.create(
                 user_id=current_user.id,
                 title=generated_title,
                 audio_filename=filename,
-                transcript=None,
-                summary=None,
+                transcript=transcript,
+                summary=summary,
                 duration_seconds=duration,
                 privacy_level=privacy_level
             )
@@ -133,7 +218,8 @@ def create_post():
                 current_app.logger.info(f"Post created successfully with ID: {post.id}, slug: {post.slug}")
                 
                 if auto_process:
-                    # Redirect to processing page for AI processing
+                    # Show processing page briefly, then redirect to final post
+                    flash('Voice post created successfully! Processing with AI...', 'success')
                     return redirect(url_for('posts.processing_post', post_id=post.id))
                 else:
                     # No AI processing, redirect to view post

@@ -138,7 +138,7 @@
                             <div class="recording-preview d-none" id="recordingPreview">
                                 <div class="preview-header">
                                     <h5><i class="bi bi-music-note-beamed"></i> Current Recording</h5>
-                                    <p>Review your current recording</p>
+                                    <p>Your recording has been auto-saved as a segment</p>
                                 </div>
                                 <audio controls id="recordingAudio" class="w-100">
                                     Your browser does not support the audio element.
@@ -148,21 +148,18 @@
                                     <span class="recording-size" id="recordingSize"></span>
                                 </div>
                                 <div class="recording-actions mt-3">
-                                    <button type="button" class="btn btn-success btn-sm" id="saveRecordingBtn">
-                                        <i class="bi bi-check-circle"></i> Save Segment
-                                    </button>
-                                    <button type="button" class="btn btn-outline-danger btn-sm" id="discardRecordingBtn">
-                                        <i class="bi bi-x-circle"></i> Discard
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="discardRecordingBtn">
+                                        <i class="bi bi-x-circle"></i> Discard & Re-record
                                     </button>
                                 </div>
                             </div>
                             
                             <!-- Recordings Table -->
                             <div class="recordings-table mt-4" id="recordingsTable" style="display: none;">
-                                <div class="table-header">
-                                    <h5><i class="bi bi-collection-play"></i> Recording Segments</h5>
-                                    <p>Manage your recording segments before creating the final post</p>
-                                </div>
+                                                            <div class="table-header">
+                                <h5><i class="bi bi-collection-play"></i> Recording Segments</h5>
+                                <p>Your recording segments are automatically saved. Manage them before creating the final post</p>
+                            </div>
                                 <div class="table-responsive">
                                     <table class="table table-hover">
                                         <thead>
@@ -1002,14 +999,12 @@ function initializeRecording() {
     const recordBtn = document.getElementById('recordBtn');
     const stopBtn = document.getElementById('stopBtn');
     const clearBtn = document.getElementById('clearBtn');
-    const saveRecordingBtn = document.getElementById('saveRecordingBtn');
     const discardRecordingBtn = document.getElementById('discardRecordingBtn');
     const clearAllRecordingsBtn = document.getElementById('clearAllRecordingsBtn');
     
     recordBtn.addEventListener('click', startRecording);
     stopBtn.addEventListener('click', stopRecording);
     clearBtn.addEventListener('click', clearRecording);
-    saveRecordingBtn.addEventListener('click', saveRecording);
     discardRecordingBtn.addEventListener('click', discardRecording);
     clearAllRecordingsBtn.addEventListener('click', clearAllRecordings);
     
@@ -1118,7 +1113,10 @@ function handleRecordingComplete(audioBlob) {
     // Show preview
     recordingPreview.classList.remove('d-none');
     
-    showToast('Recording complete! Save it as a segment or discard and record again.', 'success');
+    // Auto-save the recording segment
+    saveRecording();
+    
+    showToast('Recording segment auto-saved! You can continue recording more segments.', 'success');
 }
 
 function clearRecording() {
@@ -1179,11 +1177,18 @@ function saveRecording() {
 
 function discardRecording() {
     if (currentRecording) {
+        // Find and remove the last saved recording (since it was auto-saved)
+        if (recordings.length > 0) {
+            const lastRecording = recordings.pop();
+            URL.revokeObjectURL(lastRecording.url);
+            updateRecordingsTable();
+        }
+        
         // Revoke the object URL to free memory
         URL.revokeObjectURL(currentRecording.url);
         currentRecording = null;
         clearRecording();
-        showToast('Recording discarded', 'info');
+        showToast('Recording segment discarded and removed from list', 'info');
     }
 }
 

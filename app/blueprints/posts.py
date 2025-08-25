@@ -48,7 +48,13 @@ def create_post():
         
         if auto_process:
             try:
-                transcript, gen_title, summary, error = TranscriptionService.process_audio_complete(filepath)
+                # Get user's AI training data
+                user_ai_bio = current_user.ai_bio if hasattr(current_user, 'ai_bio') else None
+                user_writing_samples = current_user.ai_writing_samples if hasattr(current_user, 'ai_writing_samples') else None
+                
+                transcript, gen_title, summary, error = TranscriptionService.process_audio_complete(
+                    filepath, user_ai_bio, user_writing_samples
+                )
                 if error:
                     flash(f'Processing warning: {error}', 'warning')
                 else:

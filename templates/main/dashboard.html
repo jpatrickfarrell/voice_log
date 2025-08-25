@@ -50,6 +50,61 @@
     </div>
 </div>
 
+<!-- AI Training Status -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-robot"></i> AI Training Status</h3>
+                <a href="{{ url_for('auth.profile') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-gear"></i> Configure
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-{% if current_user.ai_bio %}check-circle-fill text-success{% else %}x-circle-fill text-warning{% endif %} me-2"></i>
+                            <div>
+                                <strong>Personal Bio</strong>
+                                <br><small class="text-muted">
+                                    {% if current_user.ai_bio %}
+                                        Configured - AI will write in your voice
+                                    {% else %}
+                                        Not configured - AI uses generic style
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-{% if current_user.ai_writing_samples %}check-circle-fill text-success{% else %}x-circle-fill text-warning{% endif %} me-2"></i>
+                            <div>
+                                <strong>Writing Samples</strong>
+                                <br><small class="text-muted">
+                                    {% if current_user.ai_writing_samples %}
+                                        Configured - AI learns your style
+                                    {% else %}
+                                        Not configured - AI uses default patterns
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if not current_user.ai_bio and not current_user.ai_writing_samples %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Get Started:</strong> Configure your AI training data to make posts sound authentically like you!
+                    <a href="{{ url_for('auth.profile') }}" class="alert-link">Set up now</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Content Grid -->
 <div class="row g-4">
     <!-- Recent Posts -->

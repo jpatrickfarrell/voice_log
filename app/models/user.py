@@ -5,13 +5,15 @@ from flask import current_app
 import os
 
 class User(UserMixin):
-    def __init__(self, id, username, email, password_hash, is_admin=False, is_active=True, created_at=None, updated_at=None):
+    def __init__(self, id, username, email, password_hash, is_admin=False, is_active=True, ai_bio=None, ai_writing_samples=None, created_at=None, updated_at=None):
         self.id = id
         self.username = username
         self.email = email
         self.password_hash = password_hash
         self.is_admin = is_admin
         self._is_active = is_active
+        self.ai_bio = ai_bio
+        self.ai_writing_samples = ai_writing_samples
         self.created_at = created_at
         self.updated_at = updated_at
 
@@ -64,8 +66,10 @@ class User(UserMixin):
                             'password_hash': row[3],
                             'is_admin': row[4],
                             'is_active': row[5],
-                            'created_at': row[6],
-                            'updated_at': row[7]
+                            'ai_bio': row[6] if len(row) > 6 else None,
+                            'ai_writing_samples': row[7] if len(row) > 7 else None,
+                            'created_at': row[8] if len(row) > 8 else None,
+                            'updated_at': row[9] if len(row) > 9 else None
                         }
                         current_app.logger.info(f"Using tuple, user_data: {user_data}")
                     
@@ -77,6 +81,8 @@ class User(UserMixin):
                         password_hash=user_data['password_hash'],
                         is_admin=user_data.get('is_admin', False),
                         is_active=user_data.get('is_active', True),
+                        ai_bio=user_data.get('ai_bio'),
+                        ai_writing_samples=user_data.get('ai_writing_samples'),
                         created_at=user_data.get('created_at'),
                         updated_at=user_data.get('updated_at')
                     )
@@ -266,6 +272,23 @@ class User(UserMixin):
                 (password_hash, self.id)
             )
             self.password_hash = password_hash
+
+    def update_ai_training(self, ai_bio=None, ai_writing_samples=None):
+        """Update AI training data"""
+        with get_db(current_app.config['DATABASE_PATH']) as conn:
+            if ai_bio is not None:
+                conn.execute(
+                    'UPDATE users SET ai_bio = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    (ai_bio, self.id)
+                )
+                self.ai_bio = ai_bio
+            
+            if ai_writing_samples is not None:
+                conn.execute(
+                    'UPDATE users SET ai_writing_samples = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    (ai_writing_samples, self.id)
+                )
+                self.ai_writing_samples = ai_writing_samples
 
     def get_posts(self, include_private=False):
         """Get user's voice posts"""

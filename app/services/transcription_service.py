@@ -159,7 +159,7 @@ class TranscriptionService:
             return None, f"Transcription error: {str(e)}"
     
     @staticmethod
-    def generate_summary(transcript):
+    def generate_summary(transcript, user_ai_bio=None, user_writing_samples=None):
         """Generate summary from transcript using available API provider"""
         provider = TranscriptionService._get_api_provider()
         
@@ -170,12 +170,12 @@ class TranscriptionService:
             return "Brief voice note", None
         
         if provider == 'gemini':
-            return TranscriptionService._generate_summary_with_gemini(transcript)
+            return TranscriptionService._generate_summary_with_gemini(transcript, user_ai_bio, user_writing_samples)
         else:
-            return TranscriptionService._generate_summary_with_openai(transcript)
+            return TranscriptionService._generate_summary_with_openai(transcript, user_ai_bio, user_writing_samples)
     
     @staticmethod
-    def _generate_summary_with_gemini(transcript):
+    def _generate_summary_with_gemini(transcript, user_ai_bio=None, user_writing_samples=None):
         """Generate summary using Google Gemini API"""
         api_key = os.environ.get('GEMINI_API_KEY')
         
@@ -186,42 +186,90 @@ class TranscriptionService:
             word_count = len(transcript.split())
             is_short_post = word_count < 100  # Roughly 30 seconds of speech
             
+            # Build personalized context
+            personal_context = ""
+            if user_ai_bio:
+                personal_context += f"\n\nPersonal Context: {user_ai_bio}"
+            if user_writing_samples:
+                personal_context += f"\n\nWriting Style Examples: {user_writing_samples}"
+            
             if is_short_post:
-                prompt = f"""Create a brief blog post summary for a short voice note.
-                
-                Transcript: {transcript}
-                
-                Please create a concise summary that includes:
-                - A brief description of the main topic
-                - 2-3 key points or insights
-                
-                Keep it brief and focused, suitable for a short voice note.
-                Format it nicely with HTML tags for better readability."""
+                prompt = f"""SYSTEM: You are a content formatter. Your ONLY job is to take the provided transcript and format it into a readable blog post. DO NOT add any information, facts, examples, or content that is not explicitly stated in the transcript. Only use the exact words and ideas from the transcript.
+
+Transcript: {transcript}
+
+{personal_context}
+
+TASK: Format this short transcript into a brief, readable blog post.
+
+REQUIREMENTS:
+- Write in FIRST PERSON using "I", "my", "me" throughout
+- ONLY use content from the transcript - NO additional information
+- Break the transcript into 2-3 key points
+- Keep it brief and focused
+- Format with HTML tags for readability
+- Use the personal context ONLY for writing style guidance (tone, voice, style) - DO NOT include any of this context in the actual blog post content
+- Output clean HTML without any markdown formatting or code block markers
+
+RESTRICTIONS:
+- NO adding examples not in the transcript
+- NO adding facts not mentioned
+- NO expanding on topics not discussed
+- NO making up content to fill sections
+- NO including any personal context information in the blog post
+- The personal context is ONLY for teaching you how to write, not for content
+- NO markdown formatting, code blocks, or ``` markers
+
+Output: Clean HTML formatted blog post using ONLY the transcript content."""
             else:
-                prompt = f"""Create a comprehensive blog post summary with structured sections.
-                
-                Transcript: {transcript}
-                
-                Please create a well-structured summary that includes:
-                
-                <h2>Key Points</h2>
-                <ul>
-                <li>Extract 3-5 main insights or takeaways</li>
-                <li>Focus on actionable or important information</li>
-                </ul>
-                
-                <h2>Main Content</h2>
-                Break the content into 3-5 logical sections with headers like:
-                <h3>Getting Started / Introduction</h3>
-                <h3>Core Concepts / Main Ideas</h3>
-                <h3>Key Insights / Important Points</h3>
-                <h3>Practical Applications / Examples</h3>
-                <h3>Moving Forward / Conclusion</h3>
-                
-                <h2>Summary</h2>
-                A brief wrap-up of the main message
-                
-                Make it engaging and easy to read, formatted as a professional blog post with proper HTML structure."""
+                prompt = f"""SYSTEM: You are a content formatter. Your ONLY job is to take the provided transcript and format it into a structured blog post. DO NOT add any information, facts, examples, or content that is not explicitly stated in the transcript. Only use the exact words and ideas from the transcript.
+
+Transcript: {transcript}
+
+{personal_context}
+
+TASK: Format this transcript into a structured, readable blog post.
+
+REQUIREMENTS:
+- Write in FIRST PERSON using "I", "my", "me" throughout
+- ONLY use content from the transcript - NO additional information
+- Intelligently break the transcript into logical sections based on the actual content
+- Extract key points from what was actually said
+- Format with proper HTML structure
+- Use the personal context ONLY for writing style guidance (tone, voice, style) - DO NOT include any of this context in the actual blog post content
+- Output clean HTML without any markdown formatting or code block markers
+
+STRUCTURE GUIDELINES:
+<h2>Description</h2>
+<p>Start with a compelling hook that captures the reader's attention and briefly describes what this post is about. Use content from the transcript to create interest.</p>
+
+<h2>Key Points</h2>
+<ul>
+<li>Extract 3-5 main points that were actually discussed</li>
+</ul>
+
+<h2>Main Content</h2>
+- Create sections ONLY where the transcript naturally breaks into different topics
+- Use descriptive headers that reflect the actual content (e.g., "Getting Started", "Core Ideas", "Key Insights", "Practical Steps", "Final Thoughts")
+- If the transcript only has enough content for 1-2 sections, don't force more
+- Each section should contain substantial content from the transcript
+
+<h2>Summary</h2>
+<p>Brief wrap-up using only transcript content</p>
+
+RESTRICTIONS:
+- NO adding examples not in the transcript
+- NO adding facts not mentioned
+- NO expanding on topics not discussed
+- NO making up content to fill sections
+- NO adding conclusions not stated
+- NO including any personal context information in the blog post
+- The personal context is ONLY for teaching you how to write, not for content
+- NO creating sections just to match a template - only create sections where the content naturally supports them
+- NO markdown formatting, code blocks, or ``` markers
+- ONLY organize and format what was actually said
+
+Output: Clean HTML formatted blog post using ONLY the transcript content."""
             
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
             
@@ -258,7 +306,7 @@ class TranscriptionService:
             return None, f"Gemini summary generation error: {str(e)}"
     
     @staticmethod
-    def _generate_summary_with_openai(transcript):
+    def _generate_summary_with_openai(transcript, user_ai_bio=None, user_writing_samples=None):
         """Generate summary using OpenAI GPT"""
         api_key = os.environ.get('OPENAI_API_KEY')
         
@@ -283,42 +331,90 @@ class TranscriptionService:
             word_count = len(transcript.split())
             is_short_post = word_count < 100  # Roughly 30 seconds of speech
             
+            # Build personalized context
+            personal_context = ""
+            if user_ai_bio:
+                personal_context += f"\n\nPersonal Context: {user_ai_bio}"
+            if user_writing_samples:
+                personal_context += f"\n\nWriting Style Examples: {user_writing_samples}"
+            
             if is_short_post:
-                prompt = f"""Create a brief blog post summary for a short voice note.
-                
-                Transcript: {transcript}
-                
-                Please create a concise summary that includes:
-                - A brief description of the main topic
-                - 2-3 key points or insights
-                
-                Keep it brief and focused, suitable for a short voice note.
-                Format it nicely with HTML tags for better readability."""
+                prompt = f"""SYSTEM: You are a content formatter. Your ONLY job is to take the provided transcript and format it into a readable blog post. DO NOT add any information, facts, examples, or content that is not explicitly stated in the transcript. Only use the exact words and ideas from the transcript.
+
+Transcript: {transcript}
+
+{personal_context}
+
+TASK: Format this short transcript into a brief, readable blog post.
+
+REQUIREMENTS:
+- Write in FIRST PERSON using "I", "my", "me" throughout
+- ONLY use content from the transcript - NO additional information
+- Break the transcript into 2-3 key points
+- Keep it brief and focused
+- Format with HTML tags for readability
+- Use the personal context ONLY for writing style guidance (tone, voice, style) - DO NOT include any of this context in the actual blog post content
+- Output clean HTML without any markdown formatting or code block markers
+
+RESTRICTIONS:
+- NO adding examples not in the transcript
+- NO adding facts not mentioned
+- NO expanding on topics not discussed
+- NO making up content to fill sections
+- NO including any personal context information in the blog post
+- The personal context is ONLY for teaching you how to write, not for content
+- NO markdown formatting, code blocks, or ``` markers
+
+Output: Clean HTML formatted blog post using ONLY the transcript content."""
             else:
-                prompt = f"""Create a comprehensive blog post summary with structured sections.
-                
-                Transcript: {transcript}
-                
-                Please create a well-structured summary that includes:
-                
-                <h2>Key Points</h2>
-                <ul>
-                <li>Extract 3-5 main insights or takeaways</li>
-                <li>Focus on actionable or important information</li>
-                </ul>
-                
-                <h2>Main Content</h2>
-                Break the content into 3-5 logical sections with headers like:
-                <h3>Getting Started / Introduction</h3>
-                <h3>Core Concepts / Main Ideas</h3>
-                <h3>Key Insights / Important Points</h3>
-                <h3>Practical Applications / Examples</h3>
-                <h3>Moving Forward / Conclusion</h3>
-                
-                <h2>Summary</h2>
-                A brief wrap-up of the main message
-                
-                Make it engaging and easy to read, formatted as a professional blog post with proper HTML structure."""
+                prompt = f"""SYSTEM: You are a content formatter. Your ONLY job is to take the provided transcript and format it into a structured blog post. DO NOT add any information, facts, examples, or content that is not explicitly stated in the transcript. Only use the exact words and ideas from the transcript.
+
+Transcript: {transcript}
+
+{personal_context}
+
+TASK: Format this transcript into a structured, readable blog post.
+
+REQUIREMENTS:
+- Write in FIRST PERSON using "I", "my", "me" throughout
+- ONLY use content from the transcript - NO additional information
+- Intelligently break the transcript into logical sections based on the actual content
+- Extract key points from what was actually said
+- Format with proper HTML structure
+- Use the personal context ONLY for writing style guidance (tone, voice, style) - DO NOT include any of this context in the actual blog post content
+- Output clean HTML without any markdown formatting or code block markers
+
+STRUCTURE GUIDELINES:
+<h2>Description</h2>
+<p>Start with a compelling hook that captures the reader's attention and briefly describes what this post is about. Use content from the transcript to create interest.</p>
+
+<h2>Key Points</h2>
+<ul>
+<li>Extract 3-5 main points that were actually discussed</li>
+</ul>
+
+<h2>Main Content</h2>
+- Create sections ONLY where the transcript naturally breaks into different topics
+- Use descriptive headers that reflect the actual content (e.g., "Getting Started", "Core Ideas", "Key Insights", "Practical Steps", "Final Thoughts")
+- If the transcript only has enough content for 1-2 sections, don't force more
+- Each section should contain substantial content from the transcript
+
+<h2>Summary</h2>
+<p>Brief wrap-up using only transcript content</p>
+
+RESTRICTIONS:
+- NO adding examples not in the transcript
+- NO adding facts not mentioned
+- NO expanding on topics not discussed
+- NO making up content to fill sections
+- NO adding conclusions not stated
+- NO including any personal context information in the blog post
+- The personal context is ONLY for teaching you how to write, not for content
+- NO creating sections just to match a template - only create sections where the content naturally supports them
+- NO markdown formatting, code blocks, or ``` markers
+- ONLY organize and format what was actually said
+
+Output: Clean HTML formatted blog post using ONLY the transcript content."""
             
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
@@ -506,7 +602,7 @@ Return only the title, nothing else:"""
             return None, f"Title generation error: {str(e)}"
 
     @staticmethod
-    def process_audio_complete(audio_file_path):
+    def process_audio_complete(audio_file_path, user_ai_bio=None, user_writing_samples=None):
         """Complete processing: transcription, title, and summary"""
         # Get transcript
         transcript, error = TranscriptionService.transcribe_audio(audio_file_path)
@@ -518,8 +614,8 @@ Return only the title, nothing else:"""
         if title_error:
             title = "Voice Note"  # Fallback title
         
-        # Generate summary
-        summary, summary_error = TranscriptionService.generate_summary(transcript)
+        # Generate summary with user's AI training data
+        summary, summary_error = TranscriptionService.generate_summary(transcript, user_ai_bio, user_writing_samples)
         if summary_error:
             summary = transcript[:200] + "..." if len(transcript) > 200 else transcript
         

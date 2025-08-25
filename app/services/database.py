@@ -37,11 +37,28 @@ def init_database(db_path):
                 password_hash TEXT NOT NULL,
                 is_admin BOOLEAN DEFAULT FALSE,
                 is_active BOOLEAN DEFAULT TRUE,
+                ai_bio TEXT,
+                ai_writing_samples TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
         print("Users table created/verified")
+        
+        # Add AI training columns if they don't exist (for existing databases)
+        try:
+            conn.execute('ALTER TABLE users ADD COLUMN ai_bio TEXT')
+            print("Added ai_bio column to existing users table")
+        except sqlite3.OperationalError:
+            # Column already exists
+            print("ai_bio column already exists")
+            
+        try:
+            conn.execute('ALTER TABLE users ADD COLUMN ai_writing_samples TEXT')
+            print("Added ai_writing_samples column to existing users table")
+        except sqlite3.OperationalError:
+            # Column already exists
+            print("ai_writing_samples column already exists")
         
         print("Creating voice_posts table...")
         # Voice posts table

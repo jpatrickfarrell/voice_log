@@ -139,3 +139,19 @@ def change_password():
         flash('Password updated successfully!', 'success')
     
     return redirect(url_for('auth.profile'))
+
+@auth_bp.route('/update_ai_training', methods=['POST'])
+@login_required
+def update_ai_training():
+    """Update AI training data for the current user"""
+    ai_bio = request.form.get('ai_bio', '').strip()
+    ai_writing_samples = request.form.get('ai_writing_samples', '').strip()
+    
+    try:
+        current_user.update_ai_training(ai_bio, ai_writing_samples)
+        flash('AI training data updated successfully!', 'success')
+    except Exception as e:
+        current_app.logger.error(f"Error updating AI training data: {e}")
+        flash('Error updating AI training data. Please try again.', 'error')
+    
+    return redirect(url_for('auth.profile'))

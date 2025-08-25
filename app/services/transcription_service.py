@@ -186,19 +186,21 @@ class TranscriptionService:
             word_count = len(transcript.split())
             is_short_post = word_count < 100  # Roughly 30 seconds of speech
             
-            # Build personalized context
-            personal_context = ""
-            if user_ai_bio:
-                personal_context += f"\n\nPersonal Context: {user_ai_bio}"
-            if user_writing_samples:
-                personal_context += f"\n\nWriting Style Examples: {user_writing_samples}"
+            # Build personalized context for writing style guidance only
+            writing_style_instruction = ""
+            if user_ai_bio or user_writing_samples:
+                writing_style_instruction = "\n\nWRITING STYLE INSTRUCTION: Use the following personal context ONLY to guide your writing style, tone, and voice. DO NOT include any of this information in the blog post content. This is purely for teaching you how to write like the person, not for content."
+                if user_ai_bio:
+                    writing_style_instruction += f"\nPersonal Bio: {user_ai_bio}"
+                if user_writing_samples:
+                    writing_style_instruction += f"\nWriting Examples: {user_writing_samples}"
             
             if is_short_post:
                 prompt = f"""SYSTEM: You are a content formatter. Your ONLY job is to take the provided transcript and format it into a readable blog post. DO NOT add any information, facts, examples, or content that is not explicitly stated in the transcript. Only use the exact words and ideas from the transcript.
 
 Transcript: {transcript}
 
-{personal_context}
+{writing_style_instruction}
 
 TASK: Format this short transcript into a brief, readable blog post.
 
@@ -208,7 +210,6 @@ REQUIREMENTS:
 - Break the transcript into 2-3 key points
 - Keep it brief and focused
 - Format with HTML tags for readability
-- Use the personal context ONLY for writing style guidance (tone, voice, style) - DO NOT include any of this context in the actual blog post content
 - Output clean HTML without any markdown formatting or code block markers
 
 RESTRICTIONS:
@@ -226,7 +227,7 @@ Output: Clean HTML formatted blog post using ONLY the transcript content."""
 
 Transcript: {transcript}
 
-{personal_context}
+{writing_style_instruction}
 
 TASK: Format this transcript into a structured, readable blog post.
 
@@ -236,7 +237,6 @@ REQUIREMENTS:
 - Intelligently break the transcript into logical sections based on the actual content
 - Extract key points from what was actually said
 - Format with proper HTML structure
-- Use the personal context ONLY for writing style guidance (tone, voice, style) - DO NOT include any of this context in the actual blog post content
 - Output clean HTML without any markdown formatting or code block markers
 
 STRUCTURE GUIDELINES:
@@ -331,19 +331,21 @@ Output: Clean HTML formatted blog post using ONLY the transcript content."""
             word_count = len(transcript.split())
             is_short_post = word_count < 100  # Roughly 30 seconds of speech
             
-            # Build personalized context
-            personal_context = ""
-            if user_ai_bio:
-                personal_context += f"\n\nPersonal Context: {user_ai_bio}"
-            if user_writing_samples:
-                personal_context += f"\n\nWriting Style Examples: {user_writing_samples}"
+            # Build personalized context for writing style guidance only
+            writing_style_instruction = ""
+            if user_ai_bio or user_writing_samples:
+                writing_style_instruction = "\n\nWRITING STYLE INSTRUCTION: Use the following personal context ONLY to guide your writing style, tone, and voice. DO NOT include any of this information in the blog post content. This is purely for teaching you how to write like the person, not for content."
+                if user_ai_bio:
+                    writing_style_instruction += f"\nPersonal Bio: {user_ai_bio}"
+                if user_writing_samples:
+                    writing_style_instruction += f"\nWriting Examples: {user_writing_samples}"
             
             if is_short_post:
                 prompt = f"""SYSTEM: You are a content formatter. Your ONLY job is to take the provided transcript and format it into a readable blog post. DO NOT add any information, facts, examples, or content that is not explicitly stated in the transcript. Only use the exact words and ideas from the transcript.
 
 Transcript: {transcript}
 
-{personal_context}
+{writing_style_instruction}
 
 TASK: Format this short transcript into a brief, readable blog post.
 
@@ -353,7 +355,6 @@ REQUIREMENTS:
 - Break the transcript into 2-3 key points
 - Keep it brief and focused
 - Format with HTML tags for readability
-- Use the personal context ONLY for writing style guidance (tone, voice, style) - DO NOT include any of this context in the actual blog post content
 - Output clean HTML without any markdown formatting or code block markers
 
 RESTRICTIONS:
@@ -371,7 +372,7 @@ Output: Clean HTML formatted blog post using ONLY the transcript content."""
 
 Transcript: {transcript}
 
-{personal_context}
+{writing_style_instruction}
 
 TASK: Format this transcript into a structured, readable blog post.
 
@@ -381,7 +382,6 @@ REQUIREMENTS:
 - Intelligently break the transcript into logical sections based on the actual content
 - Extract key points from what was actually said
 - Format with proper HTML structure
-- Use the personal context ONLY for writing style guidance (tone, voice, style) - DO NOT include any of this context in the actual blog post content
 - Output clean HTML without any markdown formatting or code block markers
 
 STRUCTURE GUIDELINES:

@@ -161,7 +161,28 @@
                     <div class="post-card-header">
                         <div class="post-meta">
                             <span class="author">{{ post.username or 'Anonymous' }}</span>
-                            <span class="date">{{ post.created_at }}</span>
+                            <span class="date">
+                                {% if post.created_at %}
+                                    {% if post.created_at is string %}
+                                        {% set date_str = post.created_at %}
+                                        {% if date_str|length > 19 %}
+                                            {% set date_parts = date_str.split(' ') %}
+                                            {% set date_only = date_parts[0] %}
+                                            {% set year = date_only.split('-')[0] %}
+                                            {% set month = date_only.split('-')[1] %}
+                                            {% set day = date_only.split('-')[2] %}
+                                            {% set month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] %}
+                                            {{ month_names[month|int - 1] }} {{ day|int }}, {{ year }}
+                                        {% else %}
+                                            {{ date_str }}
+                                        {% endif %}
+                                    {% else %}
+                                        {{ post.created_at.strftime('%B %d, %Y') }}
+                                    {% endif %}
+                                {% else %}
+                                    Unknown date
+                                {% endif %}
+                            </span>
                         </div>
                         <div class="post-duration">{{ post.format_duration() }}</div>
                     </div>
@@ -172,7 +193,10 @@
                         </h3>
                         
                         {% if post.summary %}
-                        <p class="post-summary">{{ post.summary[:120] }}{% if post.summary|length > 120 %}...{% endif %}</p>
+                        <p class="post-summary">
+                            {% set clean_summary = post.summary|striptags %}
+                            {{ clean_summary[:120] }}{% if clean_summary|length > 120 %}...{% endif %}
+                        </p>
                         {% endif %}
                     </div>
                     

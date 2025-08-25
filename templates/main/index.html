@@ -12,55 +12,53 @@
 <!-- Hero Section -->
 <div class="hero-section">
     <div class="hero-gradient-bg">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6">
-                    <h1 class="hero-title">Transform Your Voice Into <span class="text-gradient">Listenable</span> Blog Posts</h1>
-                    <p class="hero-subtitle">Record, transcribe, and publish voice notes instantly. Create engaging content with embedded audio, automatic transcriptions, and AI-generated summaries.</p>
-                    
-                    <div class="hero-actions">
-                        {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('posts.create_post') }}" class="btn btn-primary-gradient btn-lg">
-                                <i class="bi bi-plus-circle"></i> Create Your First Post
-                            </a>
-                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light btn-lg">
-                                <i class="bi bi-speedometer2"></i> Go to Dashboard
-                            </a>
-                        {% else %}
-                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary-gradient btn-lg">
-                                <i class="bi bi-person-plus"></i> Get Started Free
-                            </a>
-                            <a href="{{ url_for('main.discover') }}" class="btn btn-outline-light btn-lg">
-                                <i class="bi bi-compass"></i> Discover Posts
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
+        <div class="hero-content">
+            <div class="hero-left">
+                <h1 class="hero-title">Transform Your Voice Into <span class="text-gradient">Listenable</span> Blog Posts</h1>
+                <p class="hero-subtitle">Record, transcribe, and publish voice notes instantly. Create engaging content with embedded audio, automatic transcriptions, and AI-generated summaries.</p>
                 
-                <div class="col-lg-6">
-                    <div class="hero-demo">
-                        <div class="demo-card">
-                            <div class="demo-header">
-                                <i class="bi bi-mic-fill text-gradient"></i>
-                                <span>Voice Recording</span>
+                <div class="hero-actions">
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('posts.create_post') }}" class="btn btn-primary-gradient btn-lg">
+                            <i class="bi bi-plus-circle"></i> Create Your First Post
+                        </a>
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-speedometer2"></i> Go to Dashboard
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary-gradient btn-lg">
+                            <i class="bi bi-person-plus"></i> Get Started Free
+                        </a>
+                        <a href="{{ url_for('main.discover') }}" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-compass"></i> Discover Posts
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="hero-right">
+                <div class="hero-demo">
+                    <div class="demo-card">
+                        <div class="demo-header">
+                            <i class="bi bi-mic-fill text-gradient"></i>
+                            <span>Voice Recording</span>
+                        </div>
+                        <div class="demo-waveform">
+                            <div class="waveform-bars">
+                                <div class="bar" style="height: 20px;"></div>
+                                <div class="bar" style="height: 35px;"></div>
+                                <div class="bar" style="height: 15px;"></div>
+                                <div class="bar" style="height: 45px;"></div>
+                                <div class="bar" style="height: 25px;"></div>
+                                <div class="bar" style="height: 30px;"></div>
+                                <div class="bar" style="height: 40px;"></div>
+                                <div class="bar" style="height: 20px;"></div>
                             </div>
-                            <div class="demo-waveform">
-                                <div class="waveform-bars">
-                                    <div class="bar" style="height: 20px;"></div>
-                                    <div class="bar" style="height: 35px;"></div>
-                                    <div class="bar" style="height: 15px;"></div>
-                                    <div class="bar" style="height: 45px;"></div>
-                                    <div class="bar" style="height: 25px;"></div>
-                                    <div class="bar" style="height: 30px;"></div>
-                                    <div class="bar" style="height: 40px;"></div>
-                                    <div class="bar" style="height: 20px;"></div>
-                                </div>
-                            </div>
-                            <div class="demo-features">
-                                <div class="feature-tag">Auto Transcript</div>
-                                <div class="feature-tag">AI Summary</div>
-                                <div class="feature-tag">Public Link</div>
-                            </div>
+                        </div>
+                        <div class="demo-features">
+                            <div class="feature-tag">Auto Transcript</div>
+                            <div class="feature-tag">AI Summary</div>
+                            <div class="feature-tag">Public Link</div>
                         </div>
                     </div>
                 </div>
@@ -256,14 +254,17 @@
 <style>
 /* Hero Section Styles */
 .hero-section {
-    margin-bottom: 4rem;
+    margin-bottom: 0;
+    min-height: calc(100vh - 80px);
 }
 
 .hero-gradient-bg {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 6rem 0;
+    min-height: calc(100vh - 80px);
     position: relative;
     overflow: hidden;
+    display: flex;
+    align-items: center;
 }
 
 .hero-gradient-bg::before {
@@ -277,9 +278,50 @@
     z-index: 1;
 }
 
-.hero-gradient-bg .container {
+.hero-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
     position: relative;
     z-index: 2;
+    height: 100%;
+}
+
+.hero-left {
+    flex: 1;
+    max-width: 600px;
+}
+
+.hero-right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-content {
+        flex-direction: column;
+        text-align: center;
+        padding: 0 1rem;
+    }
+    
+    .hero-left {
+        max-width: 100%;
+        margin-bottom: 2rem;
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-actions {
+        justify-content: center;
+    }
 }
 
 .hero-title {
@@ -291,7 +333,7 @@
 }
 
 .text-gradient {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -311,7 +353,7 @@
 }
 
 .btn-primary-gradient {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border: none;
     color: white;
     font-weight: 600;
@@ -320,7 +362,7 @@
 
 .btn-primary-gradient:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(240, 147, 251, 0.3);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
     color: white;
 }
 
@@ -504,7 +546,7 @@
 
 .feature-icon i {
     font-size: 2rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

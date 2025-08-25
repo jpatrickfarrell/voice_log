@@ -70,7 +70,24 @@
                         </div>
                         <div class="post-date">
                             <i class="bi bi-calendar3"></i>
-                            <time datetime="{{ post.created_at }}">{{ post.created_at }}</time>
+                            <time datetime="{{ post.created_at }}">
+                                {% if post.created_at %}
+                                    {% set date_str = post.created_at|string %}
+                                    {% if date_str|length > 10 %}
+                                        {% set date_parts = date_str.split(' ')[0].split('-') %}
+                                        {% if date_parts|length == 3 %}
+                                            {% set month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] %}
+                                            {{ month_names[date_parts[1]|int - 1] }} {{ date_parts[2]|int }}, {{ date_parts[0] }}
+                                        {% else %}
+                                            {{ date_str }}
+                                        {% endif %}
+                                    {% else %}
+                                        {{ date_str }}
+                                    {% endif %}
+                                {% else %}
+                                    Unknown
+                                {% endif %}
+                            </time>
                         </div>
                     </div>
                     <div class="post-duration">
@@ -87,7 +104,8 @@
                     
                     {% if post.summary %}
                     <div class="post-summary">
-                        {{ post.summary[:150] }}{% if post.summary|length > 150 %}...{% endif %}
+                        {% set clean_summary = post.summary|striptags %}
+                        {{ clean_summary[:150] }}{% if clean_summary|length > 150 %}...{% endif %}
                     </div>
                     {% endif %}
                     

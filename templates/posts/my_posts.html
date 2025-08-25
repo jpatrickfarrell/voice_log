@@ -4,14 +4,17 @@
 
 {% block content %}
 <div class="container">
-    <div class="my-posts-container">
-        <header class="posts-header">
-            <h1>My Voice Posts</h1>
-            <p class="subtitle">Manage and organize your voice posts</p>
-            <a href="{{ url_for('posts.create_post') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Create New Post
-            </a>
-        </header>
+        <div class="page-header">
+            <div>
+                <h1>My Voice Posts</h1>
+                <p class="subtitle">Manage and organize your voice posts</p>
+            </div>
+            <div>
+                <a href="{{ url_for('posts.create_post') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Create New Post
+                </a>
+            </div>
+        </div>
 
         {% if posts %}
         <div class="table-responsive">
@@ -140,29 +143,9 @@
 </div>
 
 <style>
-.my-posts-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 2rem 0;
-}
+/* Container styling is now handled by the standard .container class */
 
-.posts-header {
-    text-align: center;
-    margin-bottom: 3rem;
-}
-
-.posts-header h1 {
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-    font-size: 2.5rem;
-    font-weight: 600;
-}
-
-.subtitle {
-    color: var(--text-secondary);
-    font-size: 1.2rem;
-    margin-bottom: 2rem;
-}
+/* Header styling is now handled by the standard .page-header class */
 
 /* Table Styles */
 .table-responsive {

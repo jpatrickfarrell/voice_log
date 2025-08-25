@@ -260,8 +260,9 @@
 {% block scripts %}
 <style>
 .create-post-page {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
+    padding: 0 1rem;
 }
 
 .create-form-container {
@@ -287,14 +288,14 @@
 
 .section-header {
     background: var(--bg-secondary);
-    padding: 1.5rem;
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-light);
 }
 
 .section-header h3 {
     font-size: 1.125rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -311,7 +312,7 @@
 }
 
 .section-content {
-    padding: 1.5rem;
+    padding: 1rem 1.5rem;
 }
 
 .form-grid {
@@ -327,15 +328,16 @@
 
 .form-label {
     font-weight: 500;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem;
     color: var(--text-primary);
+    font-size: 0.9rem;
 }
 
 .form-control {
     background: var(--bg-secondary);
     border: 1px solid var(--border-light);
     border-radius: var(--radius-md);
-    padding: 0.75rem;
+    padding: 0.625rem;
     font-size: 0.875rem;
     transition: border-color 0.15s ease;
 }
@@ -356,12 +358,114 @@
 .upload-area {
     border: 2px dashed var(--border-medium);
     border-radius: var(--radius-lg);
-    padding: 3rem;
+    padding: 2rem;
     text-align: center;
     background: var(--bg-secondary);
     transition: all 0.15s ease;
     cursor: pointer;
     position: relative;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .create-post-page {
+        max-width: 100%;
+        padding: 0 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .create-post-page {
+        padding: 0 0.5rem;
+    }
+    
+    .section-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .section-content {
+        padding: 0.75rem 1rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .upload-area {
+        padding: 1.5rem;
+    }
+    
+    .upload-icon {
+        font-size: 2.5rem;
+    }
+    
+    .upload-text h4 {
+        font-size: 1rem;
+    }
+    
+    .upload-text p {
+        font-size: 0.8rem;
+    }
+    
+    .record-container {
+        padding: 1rem;
+    }
+    
+    .record-controls {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .record-controls .btn {
+        width: 100%;
+    }
+    
+    .recordings-table {
+        font-size: 0.85rem;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .create-post-page {
+        padding: 0 0.25rem;
+    }
+    
+    .section-header {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .section-content {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .upload-area {
+        padding: 1rem;
+    }
+    
+    .upload-icon {
+        font-size: 2rem;
+    }
+    
+    .form-control {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
 }
 
 .upload-area:hover {

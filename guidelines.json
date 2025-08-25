@@ -1144,6 +1144,96 @@
             "button_styling": "Primary button with increased padding and min-width",
             "spacing": "Generous padding around action area for visual separation"
           }
+        },
+        "gradient_cards": {
+          "description": "Beautiful gradient background cards with hover effects for feature showcases",
+          "base_structure": {
+            "card_class": "feature-card",
+            "gradient_variants": [
+              "gradient-card-blue",
+              "gradient-card-purple", 
+              "gradient-card-green",
+              "gradient-card-orange",
+              "gradient-card-pink",
+              "gradient-card-indigo"
+            ],
+            "layout": "Grid-based responsive layout with equal height cards"
+          },
+          "card_design": {
+            "padding": "2.5rem 2rem",
+            "border_radius": "20px",
+            "height": "100% (equal height cards)",
+            "text_alignment": "center",
+            "border": "none",
+            "overflow": "hidden (for gradient overlay)",
+            "position": "relative (for pseudo-element positioning)"
+          },
+          "gradient_overlays": {
+            "implementation": "CSS ::before pseudo-element with linear-gradient backgrounds",
+            "opacity": "0.1 (default), 0.15 (hover)",
+            "transition": "opacity 0.3s ease",
+            "gradients": {
+              "blue": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              "purple": "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+              "green": "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+              "orange": "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+              "pink": "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+              "indigo": "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)"
+            }
+          },
+          "hover_effects": {
+            "transform": "translateY(-8px)",
+            "shadow": "0 20px 40px rgba(0, 0, 0, 0.1)",
+            "transition": "all 0.3s ease",
+            "gradient_opacity": "Increases from 0.1 to 0.15"
+          },
+          "icon_design": {
+            "container": "80x80px white circle with shadow",
+            "background": "white",
+            "border_radius": "50%",
+            "shadow": "0 10px 25px rgba(0, 0, 0, 0.1)",
+            "position": "relative z-index: 1 (above gradient)",
+            "margin": "0 auto 1.5rem"
+          },
+          "icon_styling": {
+            "size": "2rem",
+            "background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            "text_clip": "background-clip: text, -webkit-background-clip: text",
+            "color": "transparent (-webkit-text-fill-color: transparent)",
+            "fallback": "Primary color if gradient not supported"
+          },
+          "typography": {
+            "title": {
+              "size": "1.25rem",
+              "weight": "600",
+              "margin": "0 0 1rem 0",
+              "position": "relative z-index: 1"
+            },
+            "description": {
+              "color": "var(--text-secondary)",
+              "line_height": "1.6",
+              "position": "relative z-index: 1"
+            }
+          },
+          "responsive_behavior": {
+            "grid_layout": "col-md-4 (3 cards per row on medium+ screens)",
+            "mobile_adaptation": "Single column layout on small screens",
+            "card_height": "Maintains equal height within rows"
+          },
+          "usage_guidelines": {
+            "best_for": "Feature showcases, service highlights, benefit explanations",
+            "content_length": "Keep descriptions concise (2-3 sentences max)",
+            "icon_selection": "Use relevant Bootstrap Icons that match the feature",
+            "gradient_choice": "Select gradients that complement the feature theme",
+            "accessibility": "Ensure sufficient contrast between text and gradient background"
+          },
+          "css_implementation": {
+            "base_class": ".feature-card",
+            "gradient_classes": ".gradient-card-{color}::before",
+            "hover_states": ".feature-card:hover",
+            "icon_container": ".feature-icon",
+            "text_elements": "h3, p with position: relative; z-index: 1"
+          }
         }
       }
     }

@@ -1484,8 +1484,7 @@ function initializeFormSubmission() {
     const form = document.getElementById('createPostForm');
     const submitBtn = document.getElementById('submitBtn');
     
-    // Check which API provider is available
-    checkApiProvider();
+    // Note: API provider check removed for faster form submission
     
     form.addEventListener('submit', function(e) {
         // Validate that we have either a file or recordings
@@ -1502,6 +1501,10 @@ function initializeFormSubmission() {
         // If we have recordings, we need to combine them first
         if (hasRecordings) {
             e.preventDefault();
+            // Show immediate feedback
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
             combineRecordingsAndSubmit();
             return;
         }
@@ -1512,6 +1515,11 @@ function initializeFormSubmission() {
             showToast('Redirecting to processing page...', 'info');
         }
         
+        // Show immediate feedback for form submission
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-arrow-right-circle"></i> Creating Post...';
+        
         // Add form submission debugging
         console.log('Form submitted with data:', {
             title: document.getElementById('title').value,
@@ -1521,8 +1529,7 @@ function initializeFormSubmission() {
         });
     });
     
-    // Check database health on page load
-    checkDatabaseHealth();
+    // Note: Database health check removed for faster page load
 }
 
 async function combineRecordingsAndSubmit() {
@@ -1550,10 +1557,8 @@ async function combineRecordingsAndSubmit() {
         
         showToast('Recordings combined successfully! Submitting form...', 'success');
         
-        // Submit the form
-        setTimeout(() => {
-            document.getElementById('createPostForm').submit();
-        }, 1000);
+        // Submit the form immediately
+        document.getElementById('createPostForm').submit();
         
     } catch (error) {
         console.error('Error combining recordings:', error);

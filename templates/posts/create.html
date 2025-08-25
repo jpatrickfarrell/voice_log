@@ -64,13 +64,13 @@
                     <!-- Input Method Toggle -->
                     <div class="input-method-toggle">
                         <div class="toggle-buttons">
-                            <button type="button" class="toggle-btn active" data-method="upload" id="uploadToggle">
-                                <i class="bi bi-cloud-upload"></i>
-                                Upload File
-                            </button>
                             <button type="button" class="toggle-btn" data-method="record" id="recordToggle">
                                 <i class="bi bi-mic"></i>
                                 Record Audio
+                            </button>
+                            <button type="button" class="toggle-btn" data-method="upload" id="uploadToggle">
+                                <i class="bi bi-cloud-upload"></i>
+                                Upload File
                             </button>
                         </div>
                     </div>
@@ -862,6 +862,12 @@ function initializeInputMethodToggle() {
     const recordToggle = document.getElementById('recordToggle');
     const uploadMethod = document.getElementById('uploadMethod');
     const recordMethod = document.getElementById('recordMethod');
+    
+    // Set Record Audio as default active tab
+    recordToggle.classList.add('active');
+    uploadToggle.classList.remove('active');
+    recordMethod.classList.remove('d-none');
+    uploadMethod.classList.add('d-none');
     
     uploadToggle.addEventListener('click', () => {
         uploadToggle.classList.add('active');

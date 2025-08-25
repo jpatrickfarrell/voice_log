@@ -576,6 +576,35 @@
     white-space: pre-wrap;
 }
 
+/* Formatted transcript styling */
+.transcript-paragraph {
+    margin-bottom: 1rem;
+    text-align: left;
+    text-indent: 0;
+    padding: 0;
+    white-space: normal;
+}
+
+.transcript-paragraph:last-child {
+    margin-bottom: 0;
+}
+
+.transcript-paragraph:first-child {
+    margin-top: 0;
+}
+
+/* Enhanced readability for transcript text */
+.formatted-transcript {
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.formatted-transcript p {
+    margin-bottom: 1.2rem;
+    padding: 0;
+    text-align: left;
+}
+
 .processing-section {
     background: var(--bg-main);
     border: 1px solid var(--border-light);
@@ -822,7 +851,66 @@ function initializeAudioPlayer() {
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
     initializeAudioPlayer();
+    formatTranscript();
 });
+
+// Format transcript into readable paragraphs
+function formatTranscript() {
+    const transcriptElement = document.getElementById('transcript');
+    if (!transcriptElement || !transcriptElement.textContent.trim()) {
+        return;
+    }
+    
+    const transcriptText = transcriptElement.textContent.trim();
+    
+    // Check if transcript already has HTML formatting
+    if (transcriptText.includes('<p>') || transcriptText.includes('<br>')) {
+        // Transcript already has formatting, just ensure it's rendered as HTML
+        transcriptElement.innerHTML = transcriptText;
+        return;
+    }
+    
+    // Split transcript into sentences and create paragraphs
+    const sentences = transcriptText.split(/(?<=[.!?])\s+/);
+    const paragraphs = [];
+    let currentParagraph = [];
+    
+    sentences.forEach((sentence, index) => {
+        currentParagraph.push(sentence);
+        
+        // Create a new paragraph every 3-4 sentences or when there's a natural break
+        if (currentParagraph.length >= 3 || 
+            sentence.length > 100 || 
+            sentence.includes('So,') || 
+            sentence.includes('Now,') ||
+            sentence.includes('Well,') ||
+            sentence.includes('Anyway,') ||
+            sentence.includes('First,') ||
+            sentence.includes('Second,') ||
+            sentence.includes('Finally,') ||
+            sentence.includes('In conclusion,') ||
+            index === sentences.length - 1) {
+            
+            if (currentParagraph.length > 0) {
+                paragraphs.push(currentParagraph.join(' '));
+                currentParagraph = [];
+            }
+        }
+    });
+    
+    // If there are remaining sentences, add them as the last paragraph
+    if (currentParagraph.length > 0) {
+        paragraphs.push(currentParagraph.join(' '));
+    }
+    
+    // Create formatted HTML
+    const formattedHTML = paragraphs.map(paragraph => 
+        `<p class="transcript-paragraph">${paragraph.trim()}</p>`
+    ).join('');
+    
+    // Replace the plain text with formatted HTML
+    transcriptElement.innerHTML = formattedHTML;
+}
 
 function setAudioFormat() {
     const audioFormat = document.getElementById('audioFormat');

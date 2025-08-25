@@ -62,7 +62,7 @@ class TranscriptionService:
                 "contents": [{
                     "parts": [
                         {
-                            "text": "Please transcribe this audio file accurately. Return only the transcript text without any additional formatting or commentary."
+                            "text": "Please transcribe this audio file accurately and format it for readability. Break the transcript into logical paragraphs every 3-4 sentences or when there are natural speech breaks (like pauses, topic changes, or transitional phrases). Use <p> tags to separate paragraphs. Return only the formatted transcript without any additional commentary."
                         },
                         {
                             "inline_data": {
@@ -141,7 +141,9 @@ class TranscriptionService:
                     response_format="text"
                 )
                 
-            return transcript, None
+            # Post-process OpenAI transcript to add paragraph breaks for readability
+            formatted_transcript = TranscriptionService._format_transcript_for_readability(transcript)
+            return formatted_transcript, None
             
         except openai.OpenAIError as e:
             current_app.logger.error(f"OpenAI API error: {str(e)}")
@@ -462,3 +464,38 @@ Return only the title, nothing else:"""
             summary = transcript[:200] + "..." if len(transcript) > 200 else transcript
         
         return transcript, title, summary, None
+    
+    @staticmethod
+    def _format_transcript_for_readability(transcript):
+        """Format transcript text into readable paragraphs with HTML tags"""
+        if not transcript or not isinstance(transcript, str):
+            return transcript
+        
+        # Split transcript into sentences
+        import re
+        sentences = re.split(r'(?<=[.!?])\s+', transcript.strip())
+        
+        # Group sentences into paragraphs
+        paragraphs = []
+        current_paragraph = []
+        
+        for sentence in sentences:
+            current_paragraph.append(sentence)
+            
+            # Create a new paragraph every 3-4 sentences or when there's a natural break
+            if (len(current_paragraph) >= 3 or 
+                len(sentence) > 100 or 
+                any(phrase in sentence for phrase in ['So,', 'Now,', 'Well,', 'Anyway,', 'First,', 'Second,', 'Finally,', 'In conclusion,'])):
+                
+                if current_paragraph:
+                    paragraphs.append(' '.join(current_paragraph))
+                    current_paragraph = []
+        
+        # Add any remaining sentences as the last paragraph
+        if current_paragraph:
+            paragraphs.append(' '.join(current_paragraph))
+        
+        # Format as HTML paragraphs
+        formatted_transcript = ''.join([f'<p>{paragraph.strip()}</p>' for paragraph in paragraphs])
+        
+        return formatted_transcript

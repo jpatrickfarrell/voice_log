@@ -10,7 +10,7 @@
             <p class="subtitle">Update your post details and settings</p>
         </header>
 
-        <form method="POST" class="edit-form">
+        <form method="POST" class="edit-form" enctype="multipart/form-data">
             <div class="form-section">
                 <h3>Post Information</h3>
                 
@@ -19,6 +19,46 @@
                     <input type="text" id="title" name="title" value="{{ post.title }}" required 
                            class="form-control" maxlength="100" placeholder="Enter post title">
                     <small class="form-help">Maximum 100 characters</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="header_image">Header Image (Optional)</label>
+                    <div class="header-image-upload">
+                        {% if post.header_image and post.header_image.strip() %}
+                        <div class="current-header-image">
+                            <img src="{{ url_for('posts.serve_header_image', filename=post.header_image) }}" 
+                                 alt="Current header image" class="preview-image">
+                            <div class="image-info">
+                                <strong>Current:</strong> {{ post.header_image }}
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeHeaderImage()">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="upload-area" id="uploadArea">
+                            <input type="file" id="header_image" name="header_image" 
+                                   accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" 
+                                   class="file-input" onchange="previewImage(this)">
+                            <div class="upload-content">
+                                <i class="bi bi-image"></i>
+                                <p>Click to upload or drag and drop</p>
+                                <small>PNG, JPG, GIF, WebP up to 5MB</small>
+                            </div>
+                        </div>
+                        
+                        <div class="image-preview" id="imagePreview" style="display: none;">
+                            <img id="previewImg" src="" alt="Preview">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearImagePreview()">
+                                <i class="bi bi-x-circle"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    <small class="form-help">
+                        Upload a header image to make your post more visually appealing. 
+                        Recommended size: 1200x400 pixels or similar aspect ratio.
+                    </small>
                 </div>
 
                 <div class="form-group">
@@ -88,6 +128,21 @@
                         <strong>Public:</strong> Visible to everyone<br>
                         <strong>Unlisted:</strong> Only accessible via direct link<br>
                         <strong>Private:</strong> Only visible to you
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tags">Tags</label>
+                    <select id="tags" name="tags" multiple class="form-control">
+                        {% for tag in tags %}
+                        <option value="{{ tag.id }}" 
+                                {% if tag.id in current_post_tag_ids %}selected{% endif %}>
+                            {{ tag.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-help">
+                        Select one or more tags to categorize your post (hold Ctrl/Cmd to select multiple)
                     </small>
                 </div>
 
@@ -429,6 +484,97 @@
     justify-content: flex-end;
 }
 
+/* Header Image Upload Styles */
+.header-image-upload {
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.current-header-image {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-light);
+    text-align: center;
+}
+
+.preview-image {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.image-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.upload-area {
+    position: relative;
+    border: 2px dashed var(--border-medium);
+    border-radius: var(--radius-md);
+    padding: 2rem;
+    text-align: center;
+    background: var(--bg-secondary);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.upload-area:hover {
+    border-color: var(--primary-color);
+    background: rgba(var(--primary-color-rgb), 0.05);
+}
+
+.file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-content {
+    pointer-events: none;
+}
+
+.upload-content i {
+    font-size: 2rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.upload-content p {
+    margin: 0.5rem 0;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.upload-content small {
+    color: var(--text-secondary);
+}
+
+.image-preview {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-top: 1px solid var(--border-light);
+    text-align: center;
+}
+
+.image-preview img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-sm);
+}
+
 /* Rich Text Editor Styles */
 .rich-text-editor {
     border: 1px solid var(--border-light);
@@ -668,6 +814,56 @@ function updateToolbarState() {
     }
     if (document.queryCommandState('underline')) {
         document.querySelector('[onclick="formatText(\'underline\')"]').classList.add('active');
+    }
+}
+
+// Header Image Functions
+function previewImage(input) {
+    const file = input.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            const uploadArea = document.getElementById('uploadArea');
+            
+            previewImg.src = e.target.result;
+            preview.style.display = 'block';
+            uploadArea.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function clearImagePreview() {
+    const preview = document.getElementById('imagePreview');
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('header_image');
+    
+    preview.style.display = 'none';
+    uploadArea.style.display = 'block';
+    fileInput.value = '';
+}
+
+function removeHeaderImage() {
+    if (confirm('Are you sure you want to remove the current header image?')) {
+        // Add a hidden input to indicate removal
+        const form = document.querySelector('.edit-form');
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'remove_header_image';
+        hiddenInput.value = '1';
+        form.appendChild(hiddenInput);
+        
+        // Hide the current image display
+        const currentImage = document.querySelector('.current-header-image');
+        if (currentImage) {
+            currentImage.style.display = 'none';
+        }
+        
+        // Show the upload area
+        const uploadArea = document.getElementById('uploadArea');
+        uploadArea.style.display = 'block';
     }
 }
 

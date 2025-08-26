@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Tags - Voice Log{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="manage-tags-container">
+        <header class="page-header">
+            <div>
+                <h1>Manage Tags</h1>
+                <p class="subtitle">Create, edit, and manage post tags</p>
+            </div>
+            <button class="btn btn-primary" onclick="openCreateTagModal()">
+                <i class="bi bi-plus-circle"></i> Add New Tag
+            </button>
+        </header>
+
+        <div class="tags-grid">
+            {% for tag in tags %}
+            <div class="tag-card" data-tag-id="{{ tag.id }}">
+                <div class="tag-header">
+                    <span class="tag-color" style="background-color: {{ tag.color }}"></span>
+                    <h3>{{ tag.name }}</h3>
+                    <div class="tag-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="editTag({{ tag.id }}, '{{ tag.name }}', '{{ tag.description }}', '{{ tag.color }}')">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTag({{ tag.id }}, '{{ tag.name }}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% if tag.description %}
+                <p class="tag-description">{{ tag.description }}</p>
+                {% endif %}
+                <div class="tag-meta">
+                    <small>Color: {{ tag.color }}</small>
+                    <small>Created: {{ tag.created_at.strftime('%Y-%m-%d') if tag.created_at else 'Unknown' }}</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if not tags %}
+        <div class="empty-state">
+            <div class="empty-state-content">
+                <i class="bi bi-tags display-1 text-muted"></i>
+                <h3>No tags yet</h3>
+                <p class="text-muted">Create your first tag to get started with categorizing posts.</p>
+                <button class="btn btn-primary btn-lg" onclick="openCreateTagModal()">
+                    <i class="bi bi-plus-circle"></i> Create First Tag
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Create/Edit Tag Modal -->
+<div id="tagModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="tagModalTitle">Create New Tag</h3>
+            <button type="button" class="close" onclick="closeTagModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="tagForm">
+                <input type="hidden" id="tagId" name="tagId">
+                
+                <div class="form-group">
+                    <label for="tagName">Tag Name</label>
+                    <input type="text" id="tagName" name="tagName" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tagDescription">Description (Optional)</label>
+                    <textarea id="tagDescription" name="tagDescription" class="form-control" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tagColor">Color</label>
+                    <input type="color" id="tagColor" name="tagColor" class="form-control" value="#6c757d">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" onclick="closeTagModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="saveTag()">Save Tag</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteTagModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Delete Tag</h3>
+            <button type="button" class="close" onclick="closeDeleteTagModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete the tag "<span id="deleteTagName"></span>"?</p>
+            <p class="text-warning">This will remove the tag from all posts that use it.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" onclick="closeDeleteTagModal()">Cancel</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDeleteTag()">Delete Tag</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.manage-tags-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.tags-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.tag-card {
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    transition: all 0.15s ease;
+}
+
+.tag-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.tag-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.tag-color {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--border-light);
+}
+
+.tag-header h3 {
+    margin: 0;
+    flex: 1;
+    color: var(--text-primary);
+}
+
+.tag-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tag-description {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.tag-meta {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-state-content {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: var(--bg-main);
+    margin: 5% auto;
+    padding: 0;
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 500px;
+    box-shadow: var(--shadow-xl);
+}
+
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.close:hover {
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    background: var(--bg-main);
+    color: var(--text-primary);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-main);
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
+}
+
+#tagColor {
+    width: 100%;
+    height: 50px;
+    padding: 0.25rem;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+</style>
+
+<script>
+let currentTagId = null;
+
+function openCreateTagModal() {
+    currentTagId = null;
+    document.getElementById('tagModalTitle').textContent = 'Create New Tag';
+    document.getElementById('tagForm').reset();
+    document.getElementById('tagId').value = '';
+    document.getElementById('tagModal').style.display = 'block';
+}
+
+function editTag(tagId, name, description, color) {
+    currentTagId = tagId;
+    document.getElementById('tagModalTitle').textContent = 'Edit Tag';
+    document.getElementById('tagId').value = tagId;
+    document.getElementById('tagName').value = name;
+    document.getElementById('tagDescription').value = description || '';
+    document.getElementById('tagColor').value = color;
+    document.getElementById('tagModal').style.display = 'block';
+}
+
+function closeTagModal() {
+    document.getElementById('tagModal').style.display = 'none';
+    currentTagId = null;
+}
+
+function saveTag() {
+    const formData = {
+        name: document.getElementById('tagName').value.trim(),
+        description: document.getElementById('tagDescription').value.trim(),
+        color: document.getElementById('tagColor').value
+    };
+    
+    if (!formData.name) {
+        alert('Tag name is required');
+        return;
+    }
+    
+    const url = currentTagId 
+        ? `/posts/tags/${currentTagId}`
+        : '/posts/tags/create';
+    
+    const method = currentTagId ? 'PUT' : 'POST';
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeTagModal();
+            location.reload(); // Refresh to show changes
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while saving the tag');
+    });
+}
+
+function deleteTag(tagId, tagName) {
+    document.getElementById('deleteTagName').textContent = tagName;
+    document.getElementById('deleteTagModal').style.display = 'block';
+}
+
+function closeDeleteTagModal() {
+    document.getElementById('deleteTagModal').style.display = 'none';
+}
+
+function confirmDeleteTag() {
+    const tagId = currentTagId;
+    
+    fetch(`/posts/tags/${tagId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeDeleteTagModal();
+            location.reload(); // Refresh to show changes
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while deleting the tag');
+    });
+}
+
+// Close modals when clicking outside
+window.onclick = function(event) {
+    const tagModal = document.getElementById('tagModal');
+    const deleteModal = document.getElementById('deleteTagModal');
+    
+    if (event.target === tagModal) {
+        closeTagModal();
+    }
+    if (event.target === deleteModal) {
+        closeDeleteTagModal();
+    }
+}
+</script>
+{% endblock %}

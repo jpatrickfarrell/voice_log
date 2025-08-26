@@ -155,3 +155,32 @@ def update_ai_training():
         flash('Error updating AI training data. Please try again.', 'error')
     
     return redirect(url_for('auth.profile'))
+
+@auth_bp.route('/update_profile', methods=['POST'])
+@login_required
+def update_profile():
+    """Update user profile information"""
+    display_name = request.form.get('display_name', '').strip()
+    website = request.form.get('website', '').strip()
+    short_bio = request.form.get('short_bio', '').strip()
+    instagram = request.form.get('instagram', '').strip()
+    linkedin = request.form.get('linkedin', '').strip()
+    twitter = request.form.get('twitter', '').strip()
+    facebook = request.form.get('facebook', '').strip()
+    
+    try:
+        current_user.update_profile(
+            display_name=display_name if display_name else None,
+            website=website if website else None,
+            short_bio=short_bio if short_bio else None,
+            instagram=instagram if instagram else None,
+            linkedin=linkedin if linkedin else None,
+            twitter=twitter if twitter else None,
+            facebook=facebook if facebook else None
+        )
+        flash('Profile updated successfully!', 'success')
+    except Exception as e:
+        current_app.logger.error(f"Error updating profile: {e}")
+        flash('Error updating profile. Please try again.', 'error')
+    
+    return redirect(url_for('auth.profile'))

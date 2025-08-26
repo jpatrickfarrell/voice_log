@@ -3,17 +3,19 @@ from datetime import datetime
 from app.services.database import get_db
 from flask import current_app, url_for
 import os
+from app.models.tag import Tag
 
 class VoicePost:
     def __init__(self, id, user_id, title, slug, audio_filename, transcript=None, summary=None,
                  duration_seconds=None, privacy_level='public', is_published=True, 
-                 created_at=None, updated_at=None, converted_mp3_path=None):
+                 created_at=None, updated_at=None, converted_mp3_path=None, header_image=None):
         self.id = id
         self.user_id = user_id
         self.title = title
         self.slug = slug
         self.audio_filename = audio_filename
         self.converted_mp3_path = converted_mp3_path
+        self.header_image = header_image
         self.transcript = transcript
         self.summary = summary
         self.duration_seconds = duration_seconds
@@ -186,7 +188,7 @@ class VoicePost:
         """Get public published posts"""
         with get_db(current_app.config['DATABASE_PATH']) as conn:
             rows = conn.execute('''
-                SELECT vp.*, u.username 
+                SELECT vp.*, u.username, u.display_name 
                 FROM voice_posts vp 
                 JOIN users u ON vp.user_id = u.id
                 WHERE vp.privacy_level = 'public' AND vp.is_published = TRUE
@@ -196,8 +198,35 @@ class VoicePost:
             
             posts = []
             for row in rows:
-                post = cls(**{k: v for k, v in dict(row).items() if k != 'username'})
+                post = cls(**{k: v for k, v in dict(row).items() if k not in ['username', 'display_name']})
                 post.username = row['username']
+                post.display_name = row['display_name']
+                # Load tags for each post
+                post.tags = Tag.get_tags_for_post(post.id)
+                posts.append(post)
+            
+            return posts
+    
+    @classmethod
+    def get_public_posts_by_user(cls, user_id, limit=20, offset=0):
+        """Get public published posts by a specific user"""
+        with get_db(current_app.config['DATABASE_PATH']) as conn:
+            rows = conn.execute('''
+                SELECT vp.*, u.username, u.display_name 
+                FROM voice_posts vp 
+                JOIN users u ON vp.user_id = u.id
+                WHERE vp.user_id = ? AND vp.privacy_level = 'public' AND vp.is_published = TRUE
+                ORDER BY vp.created_at DESC
+                LIMIT ? OFFSET ?
+            ''', (user_id, limit, offset)).fetchall()
+            
+            posts = []
+            for row in rows:
+                post = cls(**{k: v for k, v in dict(row).items() if k not in ['username', 'display_name']})
+                post.username = row['username']
+                post.display_name = row['display_name']
+                # Load tags for each post
+                post.tags = Tag.get_tags_for_post(post.id)
                 posts.append(post)
             
             return posts
@@ -237,7 +266,7 @@ class VoicePost:
 
     def update(self, **kwargs):
         """Update post attributes"""
-        updateable_fields = ['title', 'transcript', 'summary', 'privacy_level', 'is_published']
+        updateable_fields = ['title', 'transcript', 'summary', 'privacy_level', 'is_published', 'header_image']
         
         set_clause = []
         params = []
@@ -282,6 +311,65 @@ class VoicePost:
         if self.converted_mp3_path:
             return os.path.join(current_app.config['UPLOAD_FOLDER'], self.converted_mp3_path)
         return os.path.join(current_app.config['UPLOAD_FOLDER'], self.audio_filename)
+    
+    def get_header_image_url(self):
+        """Get the URL for the header image if available"""
+        if self.header_image and self.header_image.strip():
+            return f"/posts/header/{self.header_image}"
+        return None
+    
+    def get_formatted_date(self):
+        """Get formatted date string"""
+        if not self.created_at:
+            return "Unknown date"
+        
+        try:
+            # If it's already a string, try to parse it
+            if isinstance(self.created_at, str):
+                from datetime import datetime
+                # Try different date formats
+                for fmt in ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d', '%Y-%m-%d %H:%M:%S.%f']:
+                    try:
+                        dt = datetime.strptime(self.created_at, fmt)
+                        return dt.strftime('%B %d, %Y')
+                    except ValueError:
+                        continue
+                # If parsing fails, return the original string
+                return self.created_at
+            else:
+                # If it's a datetime object, format it
+                return self.created_at.strftime('%B %d, %Y')
+        except Exception:
+            return "Unknown date"
+    
+    def get_tags(self):
+        """Get tags for this post"""
+        if not hasattr(self, 'tags'):
+            self.tags = Tag.get_tags_for_post(self.id)
+        return self.tags
+    
+    def add_tag(self, tag_id):
+        """Add a tag to this post"""
+        return Tag.add_tag_to_post(self.id, tag_id)
+    
+    def remove_tag(self, tag_id):
+        """Remove a tag from this post"""
+        Tag.remove_tag_from_post(self.id, tag_id)
+    
+    def set_tags(self, tag_ids):
+        """Set tags for this post (replaces existing tags)"""
+        # Remove all existing tags
+        with get_db(current_app.config['DATABASE_PATH']) as conn:
+            conn.execute('DELETE FROM post_tags WHERE post_id = ?', (self.id,))
+        
+        # Add new tags
+        for tag_id in tag_ids:
+            if tag_id:
+                Tag.add_tag_to_post(self.id, tag_id)
+        
+        # Refresh tags
+        if hasattr(self, 'tags'):
+            delattr(self, 'tags')
     
     def has_mp3_version(self):
         """Check if a converted MP3 version is available"""

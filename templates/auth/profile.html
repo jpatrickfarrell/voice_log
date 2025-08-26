@@ -3,23 +3,168 @@
 {% block title %}Profile - {{ user.username }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <!-- Profile Header -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h2 class="mb-0">
-                        <i class="bi bi-person-circle"></i> Profile Settings
-                    </h2>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5>Account Information</h5>
-                            <p><strong>Username:</strong> {{ user.username }}</p>
-                            <p><strong>Email:</strong> {{ user.email }}</p>
-                            <p><strong>Member since:</strong> 
+<div class="profile-page">
+    <div class="page-header">
+        <div>
+            <h1>Profile Settings</h1>
+            <p class="subtitle">Manage your profile information and preferences</p>
+        </div>
+    </div>
+
+    <div class="profile-form-container">
+        <!-- Profile Information Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3><i class="bi bi-person-circle"></i> Profile Information</h3>
+                <p>Update your personal information and social media links</p>
+            </div>
+            
+            <div class="section-content">
+                <form method="POST" action="{{ url_for('auth.update_profile') }}" class="profile-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="display_name" class="form-label">
+                                Display Name <span class="text-muted">(optional)</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="display_name" 
+                                   name="display_name" 
+                                   value="{{ user.display_name or '' }}"
+                                   placeholder="Enter your display name">
+                            <div class="form-text">
+                                This is how your name will appear to other users
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="website" class="form-label">
+                                Website <span class="text-muted">(optional)</span>
+                            </label>
+                            <input type="url" 
+                                   class="form-control" 
+                                   id="website" 
+                                   name="website" 
+                                   value="{{ user.website or '' }}"
+                                   placeholder="https://yourwebsite.com">
+                            <div class="form-text">
+                                Your personal or business website
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="short_bio" class="form-label">
+                            Short Bio <span class="text-muted">(optional)</span>
+                        </label>
+                        <textarea 
+                            class="form-control" 
+                            id="short_bio" 
+                            name="short_bio" 
+                            rows="4" 
+                            placeholder="Tell others about yourself in a few sentences..."
+                        >{{ user.short_bio or '' }}</textarea>
+                        <div class="form-text">
+                            A brief description that will be visible on your profile
+                        </div>
+                    </div>
+                    
+                    <div class="social-links-section">
+                        <h5 class="social-links-title">Social Media Links</h5>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="instagram" class="form-label">
+                                    <i class="bi bi-instagram"></i> Instagram
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="instagram" 
+                                       name="instagram" 
+                                       value="{{ user.instagram or '' }}"
+                                       placeholder="username">
+                                <div class="form-text">
+                                    Your Instagram username (without @)
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="linkedin" class="form-label">
+                                    <i class="bi bi-linkedin"></i> LinkedIn
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="linkedin" 
+                                       name="linkedin" 
+                                       value="{{ user.linkedin or '' }}"
+                                       placeholder="profile-url">
+                                <div class="form-text">
+                                    Your LinkedIn profile URL or username
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="twitter" class="form-label">
+                                    <i class="bi bi-twitter-x"></i> X (Twitter)
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="twitter" 
+                                       name="twitter" 
+                                       value="{{ user.twitter or '' }}"
+                                       placeholder="username">
+                                <div class="form-text">
+                                    Your X (Twitter) username (without @)
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="facebook" class="form-label">
+                                    <i class="bi bi-facebook"></i> Facebook
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="facebook" 
+                                       name="facebook" 
+                                       value="{{ user.facebook or '' }}"
+                                       placeholder="username">
+                                <div class="form-text">
+                                    Your Facebook username or profile URL
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Update Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Account Information Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3><i class="bi bi-info-circle"></i> Account Information</h3>
+                <p>Your account details and statistics</p>
+            </div>
+            
+            <div class="section-content">
+                <div class="account-info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Username</div>
+                        <div class="info-value">{{ user.username }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{ user.email }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Member Since</div>
+                        <div class="info-value">
                             {% if user.created_at %}
                                 {% if user.created_at is string %}
                                     {% set date_str = user.created_at %}
@@ -40,69 +185,68 @@
                             {% else %}
                                 Unknown
                             {% endif %}
-                        </p>
                         </div>
-                        <div class="col-md-6">
-                            <h5>Statistics</h5>
-                            <p><strong>Total Posts:</strong> {{ user.get_post_count() }}</p>
-                            <p><strong>Account Status:</strong> 
-                                <span class="badge bg-success">Active</span>
-                            </p>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Total Posts</div>
+                        <div class="info-value">{{ user.get_post_count() }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Account Status</div>
+                        <div class="info-value">
+                            <span class="badge bg-success">Active</span>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- AI Training Section -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3 class="mb-0">
-                        <i class="bi bi-robot"></i> AI Training - Make Posts Sound Like You
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted mb-4">
-                        Help the AI understand your writing style and personality so it can generate blog posts that sound authentically like you.
-                    </p>
-                    
-                    <form method="POST" action="{{ url_for('auth.update_ai_training') }}">
-                        <!-- Personal Bio -->
-                        <div class="mb-4">
-                            <label for="ai_bio" class="form-label">
-                                <strong>Personal Bio (First Person)</strong>
-                            </label>
-                            <textarea 
-                                class="form-control" 
-                                id="ai_bio" 
-                                name="ai_bio" 
-                                rows="6" 
-                                placeholder="Tell the AI about yourself in first person. For example: 'I'm a passionate entrepreneur who loves helping others succeed. I believe in practical, actionable advice and sharing real experiences. I write in a conversational, encouraging tone and always try to provide value to my readers...'"
-                            >{{ user.ai_bio or '' }}</textarea>
-                            <div class="form-text">
-                                Write about who you are, what you care about, your expertise, and what you have to offer. 
-                                This helps the AI understand your voice and perspective.
-                            </div>
+        <!-- AI Training Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3><i class="bi bi-robot"></i> AI Training - Make Posts Sound Like You</h3>
+                <p>Help the AI understand your writing style and personality</p>
+            </div>
+            
+            <div class="section-content">
+                <form method="POST" action="{{ url_for('auth.update_ai_training') }}" class="ai-training-form">
+                    <div class="form-group">
+                        <label for="ai_bio" class="form-label">
+                            <strong>Personal Bio (First Person)</strong>
+                        </label>
+                        <textarea 
+                            class="form-control" 
+                            id="ai_bio" 
+                            name="ai_bio" 
+                            rows="6" 
+                            placeholder="Tell the AI about yourself in first person. For example: 'I'm a passionate entrepreneur who loves helping others succeed. I believe in practical, actionable advice and sharing real experiences. I write in a conversational, encouraging tone and always try to provide value to my readers...'"
+                        >{{ user.ai_bio or '' }}</textarea>
+                        <div class="form-text">
+                            Write about who you are, what you care about, your expertise, and what you have to offer. 
+                            This helps the AI understand your voice and perspective.
                         </div>
+                    </div>
 
-                        <!-- Writing Samples -->
-                        <div class="mb-4">
-                            <label for="ai_writing_samples" class="form-label">
-                                <strong>Writing Style Samples</strong>
-                            </label>
-                            <textarea 
-                                class="form-control" 
-                                id="ai_writing_samples" 
-                                name="ai_writing_samples" 
-                                rows="8" 
-                                placeholder="Paste examples of your writing style here. You can include blog posts, articles, emails, or any text that represents how you communicate. The AI will learn from these examples to match your tone, vocabulary, and writing patterns."
-                            >{{ user.ai_writing_samples or '' }}</textarea>
-                            <div class="form-text">
-                                Include samples of your writing to teach the AI your style. You can paste markdown, plain text, or any format.
-                                The more examples you provide, the better the AI will understand your voice.
-                            </div>
+                    <div class="form-group">
+                        <label for="ai_writing_samples" class="form-label">
+                            <strong>Writing Style Samples</strong>
+                        </label>
+                        <textarea 
+                            class="form-control" 
+                            id="ai_writing_samples" 
+                            name="ai_writing_samples" 
+                            rows="8" 
+                            placeholder="Paste examples of your writing style here. You can include blog posts, articles, emails, or any text that represents how you communicate. The AI will learn from these examples to match your tone, vocabulary, and writing patterns."
+                        >{{ user.ai_writing_samples or '' }}</textarea>
+                        <div class="form-text">
+                            Include samples of your writing to teach the AI your style. You can paste markdown, plain text, or any format.
+                            The more examples you provide, the better the AI will understand your voice.
                         </div>
+                    </div>
 
-                        <!-- Tips Section -->
+                    <div class="tips-section">
                         <div class="alert alert-info">
                             <h6><i class="bi bi-lightbulb"></i> Tips for Better AI Training:</h6>
                             <ul class="mb-0">
@@ -112,48 +256,55 @@
                                 <li><strong>Update regularly:</strong> Refine your training data as your style evolves</li>
                             </ul>
                         </div>
+                    </div>
 
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-save"></i> Save AI Training Data
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save AI Training Data
+                        </button>
+                    </div>
+                </form>
             </div>
+        </div>
 
-            <!-- Change Password Section -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3 class="mb-0">
-                        <i class="bi bi-shield-lock"></i> Change Password
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ url_for('auth.change_password') }}">
-                        <div class="mb-3">
+        <!-- Change Password Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3><i class="bi bi-shield-lock"></i> Change Password</h3>
+                <p>Update your account password</p>
+            </div>
+            
+            <div class="section-content">
+                <form method="POST" action="{{ url_for('auth.change_password') }}" class="password-form">
+                    <div class="form-grid">
+                        <div class="form-group">
                             <label for="current_password" class="form-label">Current Password</label>
                             <input type="password" class="form-control" id="current_password" name="current_password" required>
                         </div>
-                        <div class="mb-3">
+                        
+                        <div class="form-group">
                             <label for="new_password" class="form-label">New Password</label>
                             <input type="password" class="form-control" id="new_password" name="new_password" required>
                         </div>
-                        <div class="mb-3">
+                        
+                        <div class="form-group">
                             <label for="confirm_password" class="form-label">Confirm New Password</label>
                             <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
                         </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-outline-primary">
-                                <i class="bi bi-key"></i> Update Password
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="bi bi-key"></i> Update Password
+                        </button>
+                    </div>
+                </form>
             </div>
+        </div>
 
-            <!-- Back to Dashboard -->
-            <div class="text-center mb-4">
+        <!-- Back to Dashboard -->
+        <div class="form-section">
+            <div class="section-content text-center">
                 <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Back to Dashboard
                 </a>
@@ -161,52 +312,328 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <style>
-.card {
-    border: none;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    border-radius: 0.5rem;
+.profile-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
 }
 
-.card-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 0.5rem 0.5rem 0 0 !important;
-    border: none;
+.page-header {
+    margin-bottom: var(--spacing-xl);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
 }
 
-.card-header h2, .card-header h3 {
+.page-header h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
     margin: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.page-header .subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin: 0.25rem 0 0 0;
+}
+
+.profile-form-container {
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.form-section {
+    border-bottom: 1px solid var(--border-light);
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.section-header {
+    background: var(--bg-secondary);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.section-header h3 {
+    font-size: 1.125rem;
     font-weight: 600;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-header h3 i {
+    color: var(--primary-main);
+}
+
+.section-header p {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.section-content {
+    padding: 1rem 1.5rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.375rem;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-control {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 0.625rem;
+    font-size: 0.875rem;
+    transition: border-color 0.15s ease;
 }
 
 .form-control:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    border-color: var(--primary-main);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    outline: none;
 }
 
-.btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    border-radius: 0.5rem;
+.form-text {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
 }
 
-.btn-primary:hover {
-    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-    transform: translateY(-1px);
+.social-links-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.social-links-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.account-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+}
+
+.info-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+}
+
+.tips-section {
+    margin: 1.5rem 0;
 }
 
 .alert-info {
     background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
     border: 1px solid #90caf9;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-md);
 }
 
-.badge {
-    font-size: 0.875rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.375rem;
+.alert-info h6 {
+    color: #1976d2;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert-info ul {
+    color: #1976d2;
+    padding-left: 1.25rem;
+}
+
+.alert-info li {
+    margin-bottom: 0.25rem;
+}
+
+.form-actions {
+    padding: 1.5rem 0 0 0;
+    display: flex;
+    justify-content: flex-start;
+    gap: 1rem;
+}
+
+.btn {
+    min-width: 120px;
+    position: relative;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: all 0.15s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-outline-primary {
+    border: 1px solid var(--primary-main);
+    color: var(--primary-main);
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary-main);
+    color: white;
+}
+
+.btn-outline-secondary {
+    border: 1px solid var(--border-medium);
+    color: var(--text-secondary);
+    background: transparent;
+}
+
+.btn-outline-secondary:hover {
+    background: var(--text-secondary);
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .profile-page {
+        max-width: 100%;
+        padding: 0 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-page {
+        padding: 0 0.5rem;
+    }
+    
+    .page-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .section-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .section-content {
+        padding: 0.75rem 1rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .account-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-page {
+        padding: 0 0.25rem;
+    }
+    
+    .page-header {
+        /* Use standard page-header styling */
+    }
+    
+    .page-header h1 {
+        font-size: 1.25rem;
+    }
+    
+    .section-header {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .section-content {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .form-control {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
 }
 </style>
 {% endblock %}

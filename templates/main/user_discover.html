@@ -1,24 +1,27 @@
 {% extends "base.html" %}
 
-{% block title %}Discover Voice Posts - Voice Log{% endblock %}
+{% block title %}{{ user.display_name or user.username }}'s Posts - Voice Log{% endblock %}
 
 {% block head %}
-<meta name="description" content="Discover and listen to public voice posts on Voice Log. Browse listenable blog content from creators worldwide.">
+<meta name="description" content="Discover and listen to public voice posts by {{ user.display_name or user.username }} on Voice Log.">
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
     <div>
-        <h1>Discover Voice Posts</h1>
-        <p class="subtitle">Explore listenable blog posts from creators around the world</p>
+        <h1>{{ user.display_name or user.username }}'s Posts</h1>
+        <p class="subtitle">Explore listenable blog posts from {{ user.display_name or user.username }}</p>
     </div>
-    {% if current_user.is_authenticated %}
     <div>
+        <a href="{{ url_for('main.discover') }}" class="btn btn-outline-primary">
+            <i class="bi bi-compass"></i> Browse All Posts
+        </a>
+        {% if current_user.is_authenticated %}
         <a href="{{ url_for('posts.create_post') }}" class="btn btn-success">
             <i class="bi bi-plus-circle"></i> Share Your Voice
         </a>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
 
 <!-- Filter Options -->
@@ -98,12 +101,10 @@
                             </time>
                         </div>
                     </div>
-                    {% if post.format_duration() and post.format_duration() != 'Unknown' %}
                     <div class="post-duration">
                         <i class="bi bi-clock"></i>
                         <span>{{ post.format_duration() }}</span>
                     </div>
-                    {% endif %}
                 </div>
                 
                 <!-- Post Content -->
@@ -120,15 +121,17 @@
                     {% endif %}
                     
                     <!-- Post Tags -->
-                    {% if post.get_tags() %}
                     <div class="post-tags">
-                        {% for tag in post.get_tags() %}
-                        <span class="tag" style="background-color: {{ tag.color }}; color: white;" data-tag-id="{{ tag.id }}">
-                            {{ tag.name }}
-                        </span>
-                        {% endfor %}
+                        {% if post.get_tags() %}
+                            {% for tag in post.get_tags() %}
+                            <span class="tag" style="background-color: {{ tag.color }}; color: white;" data-tag-id="{{ tag.id }}">
+                                {{ tag.name }}
+                            </span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="tag tag-unknown">No tags</span>
+                        {% endif %}
                     </div>
-                    {% endif %}
                     
                     <!-- Mini Audio Player -->
                     <div class="mini-player">
@@ -201,16 +204,10 @@
         <div class="empty-state-content">
             <i class="bi bi-music-note-list display-1 text-muted"></i>
             <h3>No posts found</h3>
-            <p class="text-muted">Be the first to share your voice! Create a post to get the conversation started.</p>
-            {% if current_user.is_authenticated %}
-                <a href="{{ url_for('posts.create_post') }}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-plus-circle"></i> Create First Post
-                </a>
-            {% else %}
-                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-person-plus"></i> Join Voice Log
-                </a>
-            {% endif %}
+            <p class="text-muted">{{ user.display_name or user.username }} hasn't published any public posts yet.</p>
+            <a href="{{ url_for('main.discover') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-compass"></i> Browse All Posts
+            </a>
         </div>
     </div>
     {% endif %}
@@ -341,62 +338,56 @@
 
 .post-summary {
     color: var(--text-secondary);
-    line-height: 1.5;
     margin-bottom: 1rem;
+    line-height: 1.5;
     font-size: 0.875rem;
 }
 
-/* Mini Audio Player */
 .mini-player {
     background: var(--bg-secondary);
-    border: 1px solid var(--border-light);
     border-radius: var(--radius-md);
-    padding: 0.75rem;
+    padding: 1rem;
     margin-bottom: 1rem;
 }
 
 .player-controls {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
 }
 
 .play-btn {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
     background: var(--primary-main);
     color: white;
-    border: none;
-    border-radius: 50%;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: background-color 0.15s ease;
+    transition: all 0.15s ease;
 }
 
 .play-btn:hover {
     background: var(--primary-dark);
+    transform: scale(1.05);
 }
 
 .play-btn.playing {
-    background: var(--secondary-green);
+    background: var(--secondary-main);
 }
 
 .player-info {
     flex: 1;
-    min-width: 0;
 }
 
 .player-title {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
 }
 
 .player-progress {
@@ -498,33 +489,11 @@
 .mini-player.error .play-btn {
     background: #EF4444;
 }
-
-.mini-player.error .player-title::after {
-    content: " (Error loading audio)";
-    color: #EF4444;
-}
-
-/* Animation for new posts loading */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.post-item.new {
-    animation: fadeInUp 0.5s ease-out;
-}
 </style>
 
 <script>
-let currentPage = {{ page }};
-let isLoading = false;
 let currentAudio = null;
+let isLoading = false;
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeFilters();

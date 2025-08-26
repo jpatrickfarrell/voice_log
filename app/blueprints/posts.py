@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app.models.voice_post import VoicePost
+from app.models.tag import Tag
 from app.services.audio_service import save_audio_file, get_audio_duration, get_audio_metadata
 from app.services.transcription_service import TranscriptionService
 import os
@@ -194,6 +195,10 @@ def create_post():
         if not generated_title:
             generated_title = os.path.splitext(file.filename)[0]
         
+        # Get selected tags
+        selected_tags = request.form.getlist('tags')
+        current_app.logger.info(f"Selected tags: {selected_tags}")
+        
         # Create post
         try:
             current_app.logger.info(f"Attempting to create post for user {current_user.id}")
@@ -217,6 +222,11 @@ def create_post():
             if post:
                 current_app.logger.info(f"Post created successfully with ID: {post.id}, slug: {post.slug}")
                 
+                # Assign tags to the post
+                if selected_tags:
+                    post.set_tags(selected_tags)
+                    current_app.logger.info(f"Assigned tags {selected_tags} to post {post.id}")
+                
                 if auto_process:
                     # Show processing page briefly, then redirect to final post
                     flash('Voice post created successfully! Processing with AI...', 'success')
@@ -236,7 +246,9 @@ def create_post():
             current_app.logger.error(f"Traceback: {traceback.format_exc()}")
             flash(f'Error creating post: {str(e)}', 'error')
     
-    return render_template('posts/create.html')
+    # Get all available tags for the form
+    tags = Tag.get_all()
+    return render_template('posts/create.html', tags=tags)
 
 @posts_bp.route('/<slug>')
 def view_post(slug):
@@ -261,6 +273,9 @@ def view_post(slug):
     # Get analytics
     analytics = post.get_analytics()
     
+    # Ensure tags are loaded for the post
+    post.tags = post.get_tags()
+    
     return render_template('posts/view.html', post=post, author=author, analytics=analytics)
 
 @posts_bp.route('/edit/<slug>', methods=['GET', 'POST'])
@@ -278,23 +293,84 @@ def edit_post(slug):
         privacy_level = request.form.get('privacy_level', 'public')
         is_published = request.form.get('is_published') == 'on'
         
+        # Get selected tags
+        selected_tags = request.form.getlist('tags')
+        current_app.logger.info(f"Selected tags for edit: {selected_tags}")
+        
         # Validate privacy level
         if privacy_level not in ['public', 'unlisted', 'private']:
             privacy_level = 'public'
         
+        # Handle header image upload
+        header_image = None
+        if 'header_image' in request.files:
+            file = request.files['header_image']
+            if file and file.filename:
+                # Validate file type
+                allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+                if '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions:
+                    # Generate unique filename
+                    import uuid
+                    filename = f"header_{uuid.uuid4().hex[:8]}_{file.filename}"
+                    filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                    
+                    # Save file
+                    file.save(filepath)
+                    header_image = filename
+                    
+                    # Delete old header image if it exists
+                    if post.header_image:
+                        old_filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], post.header_image)
+                        if os.path.exists(old_filepath):
+                            os.remove(old_filepath)
+                else:
+                    flash('Invalid file type. Please upload PNG, JPG, JPEG, GIF, or WebP images only.', 'error')
+        
+        # Handle header image removal
+        if request.form.get('remove_header_image') == '1':
+            if post.header_image:
+                old_filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], post.header_image)
+                if os.path.exists(old_filepath):
+                    os.remove(old_filepath)
+                header_image = ""  # Set to empty string to remove the header image
+        
         if title:
+            # Determine the final header_image value
+            final_header_image = None
+            if header_image is not None:
+                final_header_image = header_image
+                current_app.logger.info(f"Setting new header image: {final_header_image}")
+            elif request.form.get('remove_header_image') == '1':
+                final_header_image = ""  # Remove header image
+                current_app.logger.info("Removing header image")
+            else:
+                final_header_image = post.header_image  # Keep existing
+                current_app.logger.info(f"Keeping existing header image: {final_header_image}")
+            
+            current_app.logger.info(f"Final header_image value: {final_header_image}")
+            
             post.update(
                 title=title,
                 summary=summary,
                 privacy_level=privacy_level,
-                is_published=is_published
+                is_published=is_published,
+                header_image=final_header_image
             )
+            
+            # Update tags
+            post.set_tags(selected_tags)
+            current_app.logger.info(f"Updated tags for post {post.id}: {selected_tags}")
+            
             flash('Post updated successfully!', 'success')
             return redirect(url_for('posts.view_post', slug=post.slug))
         else:
             flash('Title is required', 'error')
     
-    return render_template('posts/edit.html', post=post)
+    # Get all available tags and current post tags
+    tags = Tag.get_all()
+    current_post_tags = post.get_tags()
+    current_post_tag_ids = {tag.id for tag in current_post_tags} if current_post_tags else set()
+    return render_template('posts/edit.html', post=post, tags=tags, current_post_tag_ids=current_post_tag_ids)
 
 @posts_bp.route('/delete/<slug>', methods=['POST'])
 @login_required
@@ -446,6 +522,134 @@ def serve_audio(filename):
         current_app.logger.error(f"Exception type: {type(e)}")
         import traceback
         current_app.logger.error(f"Traceback: {traceback.format_exc()}")
+        abort(500)
+
+@posts_bp.route('/tags')
+@login_required
+def manage_tags():
+    """Manage tags (admin only)"""
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'error')
+        return redirect(url_for('main.dashboard'))
+    
+    tags = Tag.get_all()
+    return render_template('posts/manage_tags.html', tags=tags)
+
+@posts_bp.route('/tags/create', methods=['POST'])
+@login_required
+def create_tag():
+    """Create a new tag (admin only)"""
+    if not current_user.is_admin:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    data = request.get_json()
+    name = data.get('name', '').strip()
+    description = data.get('description', '').strip()
+    color = data.get('color', '#6c757d')
+    
+    if not name:
+        return jsonify({'error': 'Tag name is required'}), 400
+    
+    try:
+        tag = Tag.create(name=name, description=description, color=color)
+        return jsonify({
+            'success': True,
+            'tag': {
+                'id': tag.id,
+                'name': tag.name,
+                'description': tag.description,
+                'color': tag.color
+            }
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@posts_bp.route('/tags/<int:tag_id>', methods=['PUT'])
+@login_required
+def update_tag(tag_id):
+    """Update a tag (admin only)"""
+    if not current_user.is_admin:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    tag = Tag.get_by_id(tag_id)
+    if not tag:
+        return jsonify({'error': 'Tag not found'}), 404
+    
+    data = request.get_json()
+    name = data.get('name', '').strip()
+    description = data.get('description', '').strip()
+    color = data.get('color', '#6c757d')
+    
+    if not name:
+        return jsonify({'error': 'Tag name is required'}), 400
+    
+    try:
+        tag.update(name=name, description=description, color=color)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@posts_bp.route('/tags/<int:tag_id>', methods=['DELETE'])
+@login_required
+def delete_tag(tag_id):
+    """Delete a tag (admin only)"""
+    if not current_user.is_admin:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    tag = Tag.get_by_id(tag_id)
+    if not tag:
+        return jsonify({'error': 'Tag not found'}), 404
+    
+    try:
+        tag.delete()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@posts_bp.route('/header/<filename>')
+def serve_header_image(filename):
+    """Serve header image files"""
+    try:
+        current_app.logger.info(f"Attempting to serve header image: {filename}")
+        
+        # Check if filename is empty or just whitespace
+        if not filename or not filename.strip():
+            current_app.logger.error(f"Invalid header image filename: '{filename}'")
+            abort(404, description="Invalid header image filename")
+        
+        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        current_app.logger.info(f"Looking for header image at: {file_path}")
+        
+        if not os.path.exists(file_path):
+            current_app.logger.error(f"Header image not found: {filename}")
+            current_app.logger.error(f"File path: {file_path}")
+            current_app.logger.error(f"Upload folder: {current_app.config['UPLOAD_FOLDER']}")
+            abort(404, description=f"Header image {filename} not found")
+        
+        # Get file info
+        file_extension = os.path.splitext(filename)[1].lower()
+        
+        # Set appropriate MIME type
+        mime_types = {
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.webp': 'image/webp'
+        }
+        
+        content_type = mime_types.get(file_extension, 'image/jpeg')
+        
+        current_app.logger.info(f"Serving header image: {file_path} ({content_type})")
+        
+        return send_file(
+            file_path,
+            mimetype=content_type,
+            as_attachment=False
+        )
+        
+    except Exception as e:
+        current_app.logger.error(f"Error serving header image {filename}: {str(e)}")
         abort(500)
 
 @posts_bp.route('/increment-play/<slug>', methods=['POST'])

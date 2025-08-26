@@ -5,7 +5,7 @@ from flask import current_app
 import os
 
 class User(UserMixin):
-    def __init__(self, id, username, email, password_hash, is_admin=False, is_active=True, ai_bio=None, ai_writing_samples=None, created_at=None, updated_at=None):
+    def __init__(self, id, username, email, password_hash, is_admin=False, is_active=True, ai_bio=None, ai_writing_samples=None, display_name=None, website=None, short_bio=None, instagram=None, linkedin=None, twitter=None, facebook=None, created_at=None, updated_at=None):
         self.id = id
         self.username = username
         self.email = email
@@ -14,6 +14,13 @@ class User(UserMixin):
         self._is_active = is_active
         self.ai_bio = ai_bio
         self.ai_writing_samples = ai_writing_samples
+        self.display_name = display_name
+        self.website = website
+        self.short_bio = short_bio
+        self.instagram = instagram
+        self.linkedin = linkedin
+        self.twitter = twitter
+        self.facebook = facebook
         self.created_at = created_at
         self.updated_at = updated_at
 
@@ -68,8 +75,15 @@ class User(UserMixin):
                             'is_active': row[5],
                             'ai_bio': row[6] if len(row) > 6 else None,
                             'ai_writing_samples': row[7] if len(row) > 7 else None,
-                            'created_at': row[8] if len(row) > 8 else None,
-                            'updated_at': row[9] if len(row) > 9 else None
+                            'display_name': row[8] if len(row) > 8 else None,
+                            'website': row[9] if len(row) > 9 else None,
+                            'short_bio': row[10] if len(row) > 10 else None,
+                            'instagram': row[11] if len(row) > 11 else None,
+                            'linkedin': row[12] if len(row) > 12 else None,
+                            'twitter': row[13] if len(row) > 13 else None,
+                            'facebook': row[14] if len(row) > 14 else None,
+                            'created_at': row[15] if len(row) > 15 else None,
+                            'updated_at': row[16] if len(row) > 16 else None
                         }
                         current_app.logger.info(f"Using tuple, user_data: {user_data}")
                     
@@ -83,6 +97,13 @@ class User(UserMixin):
                         is_active=user_data.get('is_active', True),
                         ai_bio=user_data.get('ai_bio'),
                         ai_writing_samples=user_data.get('ai_writing_samples'),
+                        display_name=user_data.get('display_name'),
+                        website=user_data.get('website'),
+                        short_bio=user_data.get('short_bio'),
+                        instagram=user_data.get('instagram'),
+                        linkedin=user_data.get('linkedin'),
+                        twitter=user_data.get('twitter'),
+                        facebook=user_data.get('facebook'),
                         created_at=user_data.get('created_at'),
                         updated_at=user_data.get('updated_at')
                     )
@@ -125,6 +146,15 @@ class User(UserMixin):
                             'password_hash': row[3],
                             'is_admin': row[4],
                             'is_active': row[5],
+                            'ai_bio': row[8] if len(row) > 8 else None,
+                            'ai_writing_samples': row[9] if len(row) > 9 else None,
+                            'display_name': row[10] if len(row) > 10 else None,
+                            'website': row[11] if len(row) > 11 else None,
+                            'short_bio': row[12] if len(row) > 12 else None,
+                            'instagram': row[13] if len(row) > 13 else None,
+                            'linkedin': row[14] if len(row) > 14 else None,
+                            'twitter': row[15] if len(row) > 15 else None,
+                            'facebook': row[16] if len(row) > 16 else None,
                             'created_at': row[6],
                             'updated_at': row[7]
                         }
@@ -136,6 +166,15 @@ class User(UserMixin):
                         password_hash=user_data['password_hash'],
                         is_admin=user_data.get('is_admin', False),
                         is_active=user_data.get('is_active', True),
+                        ai_bio=user_data.get('ai_bio'),
+                        ai_writing_samples=user_data.get('ai_writing_samples'),
+                        display_name=user_data.get('display_name'),
+                        website=user_data.get('website'),
+                        short_bio=user_data.get('short_bio'),
+                        instagram=user_data.get('instagram'),
+                        linkedin=user_data.get('linkedin'),
+                        twitter=user_data.get('twitter'),
+                        facebook=user_data.get('facebook'),
                         created_at=user_data.get('created_at'),
                         updated_at=user_data.get('updated_at')
                     )
@@ -289,6 +328,58 @@ class User(UserMixin):
                     (ai_writing_samples, self.id)
                 )
                 self.ai_writing_samples = ai_writing_samples
+
+    def update_profile(self, display_name=None, website=None, short_bio=None, instagram=None, linkedin=None, twitter=None, facebook=None):
+        """Update user profile information"""
+        with get_db(current_app.config['DATABASE_PATH']) as conn:
+            if display_name is not None:
+                conn.execute(
+                    'UPDATE users SET display_name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    (display_name, self.id)
+                )
+                self.display_name = display_name
+            
+            if website is not None:
+                conn.execute(
+                    'UPDATE users SET website = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    (website, self.id)
+                )
+                self.website = website
+            
+            if short_bio is not None:
+                conn.execute(
+                    'UPDATE users SET short_bio = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    (short_bio, self.id)
+                )
+                self.short_bio = short_bio
+            
+            if instagram is not None:
+                conn.execute(
+                    'UPDATE users SET instagram = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    (instagram, self.id)
+                )
+                self.instagram = instagram
+            
+            if linkedin is not None:
+                conn.execute(
+                    'UPDATE users SET linkedin = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    (linkedin, self.id)
+                )
+                self.linkedin = linkedin
+            
+            if twitter is not None:
+                conn.execute(
+                    'UPDATE users SET twitter = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    (twitter, self.id)
+                )
+                self.twitter = twitter
+            
+            if facebook is not None:
+                conn.execute(
+                    'UPDATE users SET facebook = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    (facebook, self.id)
+                )
+                self.facebook = facebook
 
     def get_posts(self, include_private=False):
         """Get user's voice posts"""

@@ -60,6 +60,56 @@ def init_database(db_path):
             # Column already exists
             print("ai_writing_samples column already exists")
         
+        # Add new profile fields if they don't exist (for existing databases)
+        try:
+            conn.execute('ALTER TABLE users ADD COLUMN display_name TEXT')
+            print("Added display_name column to existing users table")
+        except sqlite3.OperationalError:
+            # Column already exists
+            print("display_name column already exists")
+            
+        try:
+            conn.execute('ALTER TABLE users ADD COLUMN website TEXT')
+            print("Added website column to existing users table")
+        except sqlite3.OperationalError:
+            # Column already exists
+            print("website column already exists")
+            
+        try:
+            conn.execute('ALTER TABLE users ADD COLUMN short_bio TEXT')
+            print("Added short_bio column to existing users table")
+        except sqlite3.OperationalError:
+            # Column already exists
+            print("short_bio column already exists")
+            
+        try:
+            conn.execute('ALTER TABLE users ADD COLUMN instagram TEXT')
+            print("Added instagram column to existing users table")
+        except sqlite3.OperationalError:
+            # Column already exists
+            print("instagram column already exists")
+            
+        try:
+            conn.execute('ALTER TABLE users ADD COLUMN linkedin TEXT')
+            print("Added linkedin column to existing users table")
+        except sqlite3.OperationalError:
+            # Column already exists
+            print("linkedin column already exists")
+            
+        try:
+            conn.execute('ALTER TABLE users ADD COLUMN twitter TEXT')
+            print("Added twitter column to existing users table")
+        except sqlite3.OperationalError:
+            # Column already exists
+            print("twitter column already exists")
+            
+        try:
+            conn.execute('ALTER TABLE users ADD COLUMN facebook TEXT')
+            print("Added facebook column to existing users table")
+        except sqlite3.OperationalError:
+            # Column already exists
+            print("facebook column already exists")
+        
         print("Creating voice_posts table...")
         # Voice posts table
         conn.execute('''
@@ -70,6 +120,7 @@ def init_database(db_path):
                 slug TEXT UNIQUE NOT NULL,
                 audio_filename TEXT NOT NULL,
                 converted_mp3_path TEXT,
+                header_image TEXT,
                 transcript TEXT,
                 summary TEXT,
                 duration_seconds REAL,
@@ -89,6 +140,14 @@ def init_database(db_path):
         except sqlite3.OperationalError:
             # Column already exists
             print("converted_mp3_path column already exists")
+        
+        # Add header_image column if it doesn't exist (for existing databases)
+        try:
+            conn.execute('ALTER TABLE voice_posts ADD COLUMN header_image TEXT')
+            print("Added header_image column to existing voice_posts table")
+        except sqlite3.OperationalError:
+            # Column already exists
+            print("header_image column already exists")
         
         print("Creating post_analytics table...")
         # Post analytics table
@@ -111,6 +170,61 @@ def init_database(db_path):
         conn.execute('CREATE INDEX IF NOT EXISTS idx_voice_posts_privacy ON voice_posts (privacy_level)')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_voice_posts_published ON voice_posts (is_published)')
         print("Indexes created/verified")
+        
+        # Create tags table
+        print("Creating tags table...")
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS tags (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT UNIQUE NOT NULL,
+                description TEXT,
+                color TEXT DEFAULT '#6c757d',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        print("Tags table created/verified")
+        
+        # Create post_tags junction table
+        print("Creating post_tags table...")
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS post_tags (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                post_id INTEGER NOT NULL,
+                tag_id INTEGER NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (post_id) REFERENCES voice_posts (id) ON DELETE CASCADE,
+                FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE CASCADE,
+                UNIQUE(post_id, tag_id)
+            )
+        ''')
+        print("Post_tags table created/verified")
+        
+        # Create indexes for tags
+        print("Creating tag indexes...")
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_tags_name ON tags (name)')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_post_tags_post_id ON post_tags (post_id)')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_post_tags_tag_id ON post_tags (tag_id)')
+        print("Tag indexes created/verified")
+        
+        # Insert some default tags
+        print("Inserting default tags...")
+        default_tags = [
+            ('Technology', 'Tech and software related content', '#007bff'),
+            ('Business', 'Business and entrepreneurship content', '#28a745'),
+            ('Health', 'Health and wellness content', '#dc3545'),
+            ('Education', 'Educational and learning content', '#ffc107'),
+            ('Entertainment', 'Entertainment and media content', '#e83e8c'),
+            ('Science', 'Scientific and research content', '#17a2b8'),
+            ('Lifestyle', 'Lifestyle and personal content', '#6f42c1'),
+            ('News', 'Current events and news content', '#fd7e14')
+        ]
+        
+        for tag_name, description, color in default_tags:
+            conn.execute('''
+                INSERT OR IGNORE INTO tags (name, description, color)
+                VALUES (?, ?, ?)
+            ''', (tag_name, description, color))
+        print("Default tags inserted/verified")
         
         # Create default admin user if not exists
         print("Checking for default admin user...")

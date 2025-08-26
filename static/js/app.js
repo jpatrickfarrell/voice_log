@@ -133,13 +133,16 @@ function initializeForms() {
 
 // File upload enhancements
 function initializeFileUpload(fileInput) {
-    fileInput.addEventListener('change', function() {
-        const file = this.files[0];
-        if (file) {
-            validateAudioFile(file, this);
-            showFilePreview(file, this);
-        }
-    });
+    // Only apply audio validation to inputs that are specifically for audio files
+    if (fileInput.name === 'audio_file' || fileInput.accept && fileInput.accept.includes('audio')) {
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                validateAudioFile(file, this);
+                showFilePreview(file, this);
+            }
+        });
+    }
 }
 
 // Validate audio files
@@ -175,16 +178,19 @@ function validateAudioFile(file, input) {
 function showFilePreview(file, input) {
     const preview = input.parentElement.querySelector('.file-preview');
     if (preview) {
-        preview.innerHTML = `
-            <div class="file-info">
-                <i class="bi bi-music-note-beamed"></i>
-                <div class="file-details">
-                    <div class="file-name">${file.name}</div>
-                    <div class="file-size">${formatFileSize(file.size)}</div>
+        // Only show audio preview for audio files
+        if (input.name === 'audio_file' || input.accept && input.accept.includes('audio')) {
+            preview.innerHTML = `
+                <div class="file-info">
+                    <i class="bi bi-music-note-beamed"></i>
+                    <div class="file-details">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${formatFileSize(file.size)}</div>
+                    </div>
                 </div>
-            </div>
-        `;
-        preview.style.display = 'block';
+            `;
+            preview.style.display = 'block';
+        }
     }
 }
 

@@ -44,20 +44,17 @@
     </header>
 
     <!-- Audio Player Section -->
-    <div class="audio-player-section">
+    <div class="audio-player-section" {% if post.header_image and post.header_image.strip() %}style="background-image: url('{{ post.get_header_image_url() }}')"{% endif %}>
+        {% if post.header_image and post.header_image.strip() %}
+        <div class="header-image-overlay"></div>
+        {% endif %}
 
         <div class="post-title-section">
             <h1 class="post-title">{{ post.title }}</h1>
             <div class="post-meta">
-                <span class="post-author">by {{ author.username if author else 'Unknown' }}</span>
+                <span class="post-author">by {{ (author.display_name or author.username) if author else 'Unknown' }}</span>
                 <span class="post-date">
-                    {% if post.created_at is string %}
-                        {{ post.created_at }}
-                    {% elif post.created_at %}
-                        {{ post.created_at.strftime('%B %d, %Y') }}
-                    {% else %}
-                        Unknown date
-                    {% endif %}
+                    {{ post.get_formatted_date() }}
                 </span>
                 <span class="post-duration">
                     {% if post.format_duration %}
@@ -75,27 +72,38 @@
                         <i class="bi bi-lock"></i> Private
                     {% endif %}
                 </span>
+                
+                <!-- Post Tags -->
+                {% if post.get_tags() %}
+                <div class="post-tags">
+                    {% for tag in post.get_tags() %}
+                    <span class="tag" style="background-color: {{ tag.color }}; color: white;">
+                        {{ tag.name }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
         </div>
 
-
-        <h3>Listen to this post</h3>
-        <div class="audio-player-container">
-            {% if post.converted_mp3_path %}
-                <!-- Use converted MP3 file -->
-                <audio controls preload="metadata" class="audio-element" id="audioPlayer">
-                    <source src="{{ url_for('posts.serve_audio', filename=post.converted_mp3_path) }}" type="audio/mpeg">
-                    <source src="{{ url_for('posts.serve_audio', filename=post.audio_filename) }}" type="audio/{{ post.audio_filename.split('.')[-1] }}">
-                    Your browser does not support the audio element.
-                </audio>
-            {% else %}
-                <!-- Use original file -->
-                <audio controls preload="metadata" class="audio-element" id="audioPlayer">
-                    <source src="{{ url_for('posts.serve_audio', filename=post.audio_filename) }}" type="audio/{{ post.audio_filename.split('.')[-1] }}">
-                    Your browser does not support the audio element.
-                </audio>
-            {% endif %}
-            
+        <div class="audio-player-content">
+            <h3>Listen to this post</h3>
+            <div class="audio-player-container">
+                {% if post.converted_mp3_path %}
+                    <!-- Use converted MP3 file -->
+                    <audio controls preload="metadata" class="audio-element" id="audioPlayer">
+                        <source src="{{ url_for('posts.serve_audio', filename=post.converted_mp3_path) }}" type="audio/mpeg">
+                        <source src="{{ url_for('posts.serve_audio', filename=post.audio_filename) }}" type="audio/{{ post.audio_filename.split('.')[-1] }}">
+                        Your browser does not support the audio element.
+                    </audio>
+                {% else %}
+                    <!-- Use original file -->
+                    <audio controls preload="metadata" class="audio-element" id="audioPlayer">
+                        <source src="{{ url_for('posts.serve_audio', filename=post.audio_filename) }}" type="audio/{{ post.audio_filename.split('.')[-1] }}">
+                        Your browser does not support the audio element.
+                    </audio>
+                {% endif %}
+            </div>
         </div>
     </div>
 
@@ -176,11 +184,11 @@
                         <i class="bi bi-person-circle"></i>
                     </div>
                     <div class="author-details">
-                        <div class="author-name">{{ author.username }}</div>
+                        <div class="author-name">{{ author.display_name or author.username }}</div>
                         <div class="author-posts">{{ author.get_post_count() }} posts</div>
                     </div>
                 </div>
-                <a href="{{ url_for('api.user_posts', username=author.username) }}" class="btn btn-sm btn-outline-primary w-100">
+                <a href="{{ url_for('main.user_posts', username=author.username) }}" class="btn btn-sm btn-outline-primary w-100">
                     View All Posts
                 </a>
             </div>
@@ -301,6 +309,28 @@
 .post-privacy.privacy-private {
     background: rgba(239, 68, 68, 0.1);
     color: #EF4444;
+}
+
+.post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.post-tags .tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.post-tags .tag:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 .post-actions {
@@ -434,17 +464,85 @@
     background: var(--bg-main);
     border: 1px solid var(--border-light);
     border-radius: var(--radius-lg);
-    padding: 1.5rem;
+    padding: 0;
     margin-bottom: 2rem;
     box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-.audio-player-section h3 {
-    color: var(--text-primary);
+.audio-player-section[style*="background-image"] {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: white;
+}
+
+.header-image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 100%);
+    z-index: 1;
+}
+
+.audio-player-section .post-title-section,
+.audio-player-section .audio-player-content {
+    position: relative;
+    z-index: 2;
+}
+
+.audio-player-section .post-title-section {
+    padding: 2rem 1.5rem 1rem;
+    text-align: center;
+}
+
+.audio-player-section .post-title {
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    margin-bottom: 1rem;
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.audio-player-section .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+}
+
+.audio-player-section .post-meta span {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.audio-player-section .audio-player-content {
+    padding: 1rem 1.5rem 2rem;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.audio-player-section .audio-player-content h3 {
+    color: white;
     margin-bottom: 1.5rem;
     text-align: center;
     font-size: 1.5rem;
     font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .audio-player-container {
@@ -458,6 +556,15 @@
     width: 100%;
     max-width: 500px;
     margin: 0 auto;
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Style the audio player when it's on a header image */
+.audio-player-section[style*="background-image"] .audio-element {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Remove ALL custom audio styling - let browser handle everything natively */
@@ -728,11 +835,26 @@
     }
     
     .audio-player-section {
-        padding: 1rem;
+        min-height: 300px;
         margin-bottom: 1.5rem;
     }
     
-    .audio-player-section h3 {
+    .audio-player-section .post-title {
+        font-size: 1.8rem;
+    }
+    
+    .audio-player-section .post-meta {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .audio-player-section .post-meta span {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .audio-player-section .audio-player-content h3 {
         font-size: 1.3rem;
     }
     
@@ -744,6 +866,15 @@
     .audio-info {
         flex-direction: column;
         gap: 1rem;
+    }
+    
+    .audio-player-section .post-title {
+        font-size: 1.5rem;
+    }
+    
+    .audio-player-section .post-meta span {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
     }
 }
 

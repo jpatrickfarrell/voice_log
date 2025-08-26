@@ -48,13 +48,49 @@ def discover():
     
     posts = VoicePost.get_public_posts(limit=limit, offset=offset)
     
+    # Get all available tags for filtering
+    from app.models.tag import Tag
+    tags = Tag.get_all()
+    
     # Check if there are more posts
     has_more = len(posts) == limit
     
     return render_template('main/discover.html', 
                          posts=posts, 
                          page=page, 
-                         has_more=has_more)
+                         has_more=has_more,
+                         tags=tags)
+
+@main_bp.route('/user/<username>/posts')
+def user_posts(username):
+    """User-specific discovery page - browse posts by a specific user"""
+    # Get the user
+    from app.models.user import User
+    user = User.get_by_username(username)
+    
+    if not user:
+        abort(404, description="User not found")
+    
+    page = request.args.get('page', 1, type=int)
+    limit = 20
+    offset = (page - 1) * limit
+    
+    # Get public posts by this user
+    posts = VoicePost.get_public_posts_by_user(user.id, limit=limit, offset=offset)
+    
+    # Get all available tags for filtering
+    from app.models.tag import Tag
+    tags = Tag.get_all()
+    
+    # Check if there are more posts
+    has_more = len(posts) == limit
+    
+    return render_template('main/user_discover.html', 
+                         posts=posts, 
+                         page=page, 
+                         has_more=has_more,
+                         tags=tags,
+                         user=user)
 
 @main_bp.route('/about')
 def about():

@@ -29,7 +29,8 @@ def list_posts():
             'duration_formatted': post.format_duration(),
             'created_at': post.created_at,
             'author': {
-                'username': author.username if author else 'Unknown'
+                'username': author.username if author else 'Unknown',
+                'display_name': author.display_name if author else None
             },
             'analytics': {
                 'view_count': analytics['view_count'],
@@ -77,7 +78,8 @@ def get_post(slug):
         'created_at': post.created_at,
         'updated_at': post.updated_at,
         'author': {
-            'username': author.username if author else 'Unknown'
+            'username': author.username if author else 'Unknown',
+            'display_name': author.display_name if author else None
         },
         'analytics': {
             'view_count': analytics['view_count'],
@@ -205,7 +207,8 @@ def user_posts(username):
     
     return jsonify({
         'user': {
-            'username': user.username
+            'username': user.username,
+            'display_name': user.display_name
         },
         'posts': posts_data
     })

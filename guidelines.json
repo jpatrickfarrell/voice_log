@@ -1236,6 +1236,353 @@
           }
         }
       }
+    },
+    "voice_log_design_system": {
+      "description": "Comprehensive design system for Voice Log - a modern voice-to-blog platform with clean, professional styling",
+      "project_overview": {
+        "name": "Voice Log",
+        "purpose": "Transform voice recordings into listenable blog posts with AI transcription and summaries",
+        "target_audience": "Content creators, podcasters, and voice content producers",
+        "design_philosophy": "Clean, modern, and professional with emphasis on readability and user experience"
+      },
+      "core_design_patterns": {
+        "hero_section": {
+          "description": "Full-width hero section with clean white background (no gradients)",
+          "layout": "Two-column flexbox with max-width: 1400px container",
+          "left_column": {
+            "content": "Main headline, subtitle, and call-to-action buttons",
+            "max_width": "600px",
+            "spacing": "4rem gap between columns"
+          },
+          "right_column": {
+            "content": "Interactive demo card with voice recording visualization",
+            "max_width": "450px",
+            "demo_card": {
+              "background": "white",
+              "border": "1px solid var(--border-light)",
+              "border_radius": "20px",
+              "padding": "2.5rem",
+              "shadow": "0 10px 30px rgba(0, 0, 0, 0.08)"
+            }
+          },
+          "responsive_behavior": {
+            "mobile": "Single column layout with centered text",
+            "tablet": "Maintains two-column layout with adjusted spacing"
+          }
+        },
+        "authentication_pages": {
+          "description": "Clean, focused authentication pages with two-column layout",
+          "layout": "Split-screen design with form on left, promotional content on right",
+          "left_panel": {
+            "width": "500px",
+            "background": "white",
+            "border_right": "1px solid var(--border-light)",
+            "padding": "4rem 3rem",
+            "content": "Logo, form fields, and action buttons"
+          },
+          "right_panel": {
+            "background": "var(--bg-secondary)",
+            "padding": "4rem 3rem",
+            "content": "Feature highlights, statistics, and promotional text"
+          },
+          "form_styling": {
+            "input_fields": {
+              "padding": "1rem 1rem 1rem 2.75rem",
+              "border": "2px solid var(--border-light)",
+              "border_radius": "12px",
+              "focus_state": "border-color: var(--primary-main), box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1)"
+            },
+            "buttons": {
+              "primary": {
+                "width": "100%",
+                "background": "linear-gradient(135deg, var(--primary-main) 0%, var(--primary-dark) 100%)",
+                "padding": "1.125rem",
+                "border_radius": "12px",
+                "font_size": "1rem",
+                "font_weight": "600",
+                "hover_effect": "transform: translateY(-2px), box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3)"
+              },
+              "secondary": {
+                "border": "2px solid var(--border-light)",
+                "padding": "0.875rem 1.75rem",
+                "border_radius": "10px",
+                "hover_effect": "border-color: var(--primary-main), color: var(--primary-main), transform: translateY(-1px)"
+              }
+            },
+            "checkboxes": {
+              "size": "24px × 24px",
+              "background": "white",
+              "border": "2px solid var(--border-light)",
+              "border_radius": "6px",
+              "shadow": "0 2px 4px rgba(0, 0, 0, 0.1)",
+              "checked_state": "background: var(--primary-main), border-color: var(--primary-main)",
+              "checkmark": "✓ symbol in white, 1rem font size"
+            }
+          },
+          "signup_code_requirement": {
+            "description": "Restricted registration requiring valid signup code",
+            "implementation": "Environment variable SIGNUP_CODE with fallback to 'VOICE2024'",
+            "validation": "Backend checks submitted code against configured value",
+            "user_experience": "Clear messaging that registration is invitation-only"
+          }
+        },
+        "content_cards": {
+          "description": "Modern card-based layout for posts and content",
+          "post_card": {
+            "background": "white",
+            "border": "1px solid var(--border-light)",
+            "border_radius": "20px",
+            "padding": "2rem",
+            "shadow": "0 10px 25px rgba(0, 0, 0, 0.08)",
+            "hover_effect": "transform: translateY(-5px), shadow: 0 20px 40px rgba(0, 0, 0, 0.12)"
+          },
+          "grid_layout": {
+            "desktop": "CSS Grid with auto-fit columns (minmax(400px, 1fr))",
+            "tablet": "2 columns with responsive breakpoints",
+            "mobile": "Single column layout",
+            "gap": "2rem between cards"
+          },
+          "card_elements": {
+            "header": "Author info, date, and duration badge",
+            "content": "Title, summary, and tags",
+            "footer": "Statistics (views, plays) and action buttons"
+          }
+        },
+        "navigation_header": {
+          "description": "Sticky header with modern navigation and search",
+          "height": "80px",
+          "background": "white",
+          "border_bottom": "1px solid var(--border-light)",
+          "shadow": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+          "layout": "Flexbox with max-width: 1400px container",
+          "components": {
+            "brand": "Logo with microphone icon and text",
+            "search": "Centered search bar with 400px max-width",
+            "actions": "Right-aligned buttons and user menu"
+          },
+          "search_bar": {
+            "height": "44px",
+            "border_radius": "12px",
+            "padding": "0 2.75rem 0 2.5rem",
+            "icon_position": "Left side with 0.75rem offset",
+            "focus_state": "Border color changes to primary, adds subtle shadow"
+          }
+        },
+        "page_headers": {
+          "description": "Consistent page header styling across all pages",
+          "class": "page-header",
+          "layout": "Flexbox with space-between alignment",
+          "left_side": "Page title and subtitle",
+          "right_side": "Primary action button (if applicable)",
+          "styling": {
+            "background": "white",
+            "padding": "2rem",
+            "border_radius": "20px",
+            "margin_bottom": "2rem",
+            "shadow": "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+          }
+        }
+      },
+      "component_specifications": {
+        "buttons": {
+          "primary": {
+            "background": "var(--primary-main) or gradient variants",
+            "color": "white",
+            "border": "none",
+            "padding": "0.875rem 1.5rem (standard), 1.125rem (full-width)",
+            "border_radius": "12px",
+            "font_weight": "600",
+            "hover_effects": "transform: translateY(-2px), enhanced shadow",
+            "variants": {
+              "gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              "outline": "2px solid var(--primary-main), transparent background"
+            }
+          },
+          "secondary": {
+            "background": "transparent",
+            "border": "2px solid var(--border-light)",
+            "color": "var(--text-primary)",
+            "hover_effect": "border-color: var(--primary-main), color: var(--primary-main)"
+          },
+          "success": {
+            "background": "var(--secondary-green)",
+            "color": "white",
+            "hover_effect": "transform: translateY(-1px), enhanced shadow"
+          }
+        },
+        "form_elements": {
+          "input_fields": {
+            "padding": "1rem with left padding for icons",
+            "border": "2px solid var(--border-light)",
+            "border_radius": "12px",
+            "focus_state": "Border color changes to primary, adds focus ring",
+            "icon_position": "Absolute positioning on left side"
+          },
+          "select_dropdowns": {
+            "styling": "Consistent with input fields",
+            "custom_arrows": "Bootstrap Icons chevron-down",
+            "focus_state": "Same as input fields"
+          },
+          "labels": {
+            "font_weight": "600",
+            "color": "var(--text-primary)",
+            "margin_bottom": "0.75rem",
+            "font_size": "0.875rem"
+          }
+        },
+        "tags": {
+          "description": "Small, colorful tags for categorizing content",
+          "styling": {
+            "background": "Light background with brand colors",
+            "border_radius": "20px",
+            "padding": "0.5rem 0.75rem",
+            "font_size": "0.75rem",
+            "font_weight": "500"
+          },
+          "color_schemes": "Use brand color palette with light backgrounds"
+        }
+      },
+      "layout_guidelines": {
+        "container_widths": {
+          "hero_section": "max-width: 1400px",
+          "content_sections": "max-width: 1400px",
+          "auth_pages": "max-width: 500px (left panel)",
+          "navigation": "max-width: 1400px"
+        },
+        "spacing_system": {
+          "section_padding": "4rem 2rem",
+          "card_padding": "2rem",
+          "form_spacing": "1.75rem between form groups",
+          "button_spacing": "1rem gap between buttons"
+        },
+        "responsive_breakpoints": {
+          "mobile": "max-width: 768px",
+          "tablet": "max-width: 1024px",
+          "desktop": "min-width: 1025px"
+        },
+        "grid_systems": {
+          "feature_cards": "CSS Grid with auto-fit (minmax(350px, 1fr))",
+          "post_cards": "CSS Grid with auto-fit (minmax(400px, 1fr))",
+          "auth_layout": "Flexbox with fixed widths and responsive fallbacks"
+        }
+      },
+      "css_architecture": {
+        "css_variables": {
+          "location": "static/css/style.css",
+          "scope": ":root selector for global variables",
+          "naming_convention": "kebab-case with semantic names",
+          "organization": "Grouped by color, spacing, typography, shadows"
+        },
+        "component_styles": {
+          "approach": "Component-specific CSS within template files",
+          "specificity": "Use !important declarations to override global styles",
+          "scoping": "Prefix classes with parent container (e.g., .auth-form .btn-primary)"
+        },
+        "responsive_design": {
+          "mobile_first": "Base styles for mobile, media queries for larger screens",
+          "breakpoints": "768px, 1024px for tablet and desktop",
+          "flexbox_layouts": "Use flexbox for responsive navigation and content"
+        }
+      },
+      "icon_system": {
+        "framework": "Bootstrap Icons (1.10.0)",
+        "usage": "Consistent icon sizing and positioning",
+        "common_icons": {
+          "microphone": "bi-mic-fill (brand icon)",
+          "search": "bi-search",
+          "user": "bi-person-circle",
+          "plus": "bi-plus-circle",
+          "heart": "bi-heart, bi-heart-fill (subscription states)",
+          "play": "bi-play-circle",
+          "eye": "bi-eye (view count)",
+          "calendar": "bi-calendar3 (dates)",
+          "key": "bi-key (signup code)"
+        }
+      },
+      "authentication_flow": {
+        "signup_process": {
+          "required_fields": "username, email, password, confirm_password, signup_code, terms_agreement",
+          "validation": "Real-time client-side validation with server-side verification",
+          "password_strength": "Visual indicator with color-coded bars",
+          "success_flow": "Automatic login after successful registration"
+        },
+        "login_process": {
+          "fields": "username/email, password, remember_me checkbox",
+          "demo_account": "Quick access button for testing",
+          "error_handling": "Clear error messages with field highlighting"
+        }
+      },
+      "content_management": {
+        "voice_posts": {
+          "creation": "Audio upload with transcription and summary generation",
+          "editing": "Full post editing including header images and tags",
+          "publishing": "Public/private visibility with instant permalinks",
+          "analytics": "View and play count tracking"
+        },
+        "tagging_system": {
+          "implementation": "Many-to-many relationship with tags and post_tags tables",
+          "default_tags": "Technology, Business, Health, Education, Entertainment, Lifestyle",
+          "tag_management": "Admin-only tag creation and editing",
+          "display": "Colorful tags with hover effects"
+        },
+        "subscription_system": {
+          "description": "Users can subscribe to other creators' voice logs",
+          "database": "subscriptions table with subscriber_id and creator_id",
+          "ui_components": "Dynamic subscribe/unsubscribe buttons with real-time updates",
+          "synchronization": "All buttons for same user update simultaneously"
+        }
+      },
+      "file_handling": {
+        "audio_files": {
+          "supported_formats": "MP3, WAV, FLAC, M4A, AAC, OGG, WEBM",
+          "upload_processing": "Automatic format conversion and optimization",
+          "storage": "uploads/ directory with organized subdirectories"
+        },
+        "header_images": {
+          "purpose": "Background images for post audio players",
+          "styling": "Full-width background with overlay for text readability",
+          "fallback": "Gradient background when no image is set",
+          "responsive": "Maintains aspect ratio across device sizes"
+        }
+      },
+      "performance_optimizations": {
+        "css": "CSS variables for consistent theming, component-specific styles",
+        "javascript": "Minimal global JS, component-specific functionality",
+        "images": "Optimized formats, responsive sizing",
+        "database": "Proper indexing, efficient queries with JOINs"
+      },
+             "accessibility_features": {
+         "color_contrast": "High contrast ratios for text readability",
+         "focus_states": "Clear focus indicators for keyboard navigation",
+         "semantic_html": "Proper heading hierarchy and ARIA labels",
+         "responsive_design": "Touch-friendly targets and mobile-optimized layouts"
+       },
+       "technical_implementation": {
+         "database_schema": {
+           "users_table": "17 columns including profile fields (display_name, website, short_bio, social_links)",
+           "voice_posts_table": "Includes header_image, tags, and metadata fields",
+           "tags_table": "Simple tag management with name and description",
+           "post_tags_table": "Many-to-many relationship between posts and tags",
+           "subscriptions_table": "User subscription relationships"
+         },
+         "file_structure": {
+           "templates": "Jinja2 templates with component-specific CSS",
+           "static_files": "CSS variables in style.css, component styles in templates",
+           "uploads": "Organized by user and conversion status",
+           "blueprints": "Feature-based route organization (main, auth, posts, api)"
+         },
+         "key_features": {
+           "audio_processing": "WebM to MP3 conversion, duration calculation",
+           "ai_integration": "OpenAI API for transcription and summaries",
+           "real_time_updates": "AJAX-based subscription management",
+           "responsive_design": "Mobile-first approach with CSS Grid and Flexbox"
+         },
+         "environment_configuration": {
+           "required_vars": "SECRET_KEY, SIGNUP_CODE, OPENAI_API_KEY",
+           "optional_vars": "UPLOAD_FOLDER, FLASK_DEBUG, HOST, PORT",
+           "example_file": "config.env.example with default values"
+         }
+       }
     }
   }
   

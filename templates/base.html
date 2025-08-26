@@ -12,6 +12,46 @@
     <!-- Custom CSS -->
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     
+    <!-- Header Button Styling -->
+    <style>
+        .header-actions .btn {
+            min-width: 80px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .header-actions .btn-outline-primary {
+            border: 1px solid var(--primary-main);
+            color: var(--primary-main);
+            background: transparent;
+        }
+        
+        .header-actions .btn-outline-primary:hover {
+            background: var(--primary-main);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .header-actions .btn-primary {
+            background: var(--primary-main);
+            color: white;
+            border: 1px solid var(--primary-main);
+        }
+        
+        .header-actions .btn-primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+    </style>
+    
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='icons/favicon.ico') }}">
     

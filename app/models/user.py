@@ -73,17 +73,17 @@ class User(UserMixin):
                             'password_hash': row[3],
                             'is_admin': row[4],
                             'is_active': row[5],
-                            'ai_bio': row[6] if len(row) > 6 else None,
-                            'ai_writing_samples': row[7] if len(row) > 7 else None,
-                            'display_name': row[8] if len(row) > 8 else None,
-                            'website': row[9] if len(row) > 9 else None,
-                            'short_bio': row[10] if len(row) > 10 else None,
-                            'instagram': row[11] if len(row) > 11 else None,
-                            'linkedin': row[12] if len(row) > 12 else None,
-                            'twitter': row[13] if len(row) > 13 else None,
-                            'facebook': row[14] if len(row) > 14 else None,
-                            'created_at': row[15] if len(row) > 15 else None,
-                            'updated_at': row[16] if len(row) > 16 else None
+                            'created_at': row[6],
+                            'updated_at': row[7],
+                            'ai_bio': row[8],
+                            'ai_writing_samples': row[9],
+                            'display_name': row[10],
+                            'website': row[11],
+                            'short_bio': row[12],
+                            'instagram': row[13],
+                            'linkedin': row[14],
+                            'twitter': row[15],
+                            'facebook': row[16]
                         }
                         current_app.logger.info(f"Using tuple, user_data: {user_data}")
                     
@@ -146,17 +146,17 @@ class User(UserMixin):
                             'password_hash': row[3],
                             'is_admin': row[4],
                             'is_active': row[5],
-                            'created_at': row[6] if len(row) > 6 else None,
-                            'updated_at': row[7] if len(row) > 7 else None,
-                            'ai_bio': row[8] if len(row) > 8 else None,
-                            'ai_writing_samples': row[9] if len(row) > 9 else None,
-                            'display_name': row[10] if len(row) > 10 else None,
-                            'website': row[11] if len(row) > 11 else None,
-                            'short_bio': row[12] if len(row) > 12 else None,
-                            'instagram': row[13] if len(row) > 13 else None,
-                            'linkedin': row[14] if len(row) > 14 else None,
-                            'twitter': row[15] if len(row) > 15 else None,
-                            'facebook': row[16] if len(row) > 16 else None
+                            'created_at': row[6],
+                            'updated_at': row[7],
+                            'ai_bio': row[8],
+                            'ai_writing_samples': row[9],
+                            'display_name': row[10],
+                            'website': row[11],
+                            'short_bio': row[12],
+                            'instagram': row[13],
+                            'linkedin': row[14],
+                            'twitter': row[15],
+                            'facebook': row[16]
                         }
                     
                     return cls(
@@ -221,17 +221,17 @@ class User(UserMixin):
                             'password_hash': row[3],
                             'is_admin': row[4],
                             'is_active': row[5],
-                            'created_at': row[6] if len(row) > 6 else None,
-                            'updated_at': row[7] if len(row) > 7 else None,
-                            'ai_bio': row[8] if len(row) > 8 else None,
-                            'ai_writing_samples': row[9] if len(row) > 9 else None,
-                            'display_name': row[10] if len(row) > 10 else None,
-                            'website': row[11] if len(row) > 11 else None,
-                            'short_bio': row[12] if len(row) > 12 else None,
-                            'instagram': row[13] if len(row) > 13 else None,
-                            'linkedin': row[14] if len(row) > 14 else None,
-                            'twitter': row[15] if len(row) > 15 else None,
-                            'facebook': row[16] if len(row) > 16 else None
+                            'created_at': row[6],
+                            'updated_at': row[7],
+                            'ai_bio': row[8],
+                            'ai_writing_samples': row[9],
+                            'display_name': row[10],
+                            'website': row[11],
+                            'short_bio': row[12],
+                            'instagram': row[13],
+                            'linkedin': row[14],
+                            'twitter': row[15],
+                            'facebook': row[16]
                         }
                         current_app.logger.info(f"Using tuple, user_data: {user_data}")
                     

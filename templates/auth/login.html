@@ -72,15 +72,6 @@
             <span>or</span>
         </div>
 
-        <!-- Demo Account -->
-        <div class="demo-account">
-            <p>Try Voice Log with a demo account:</p>
-            <button type="button" class="btn-secondary" id="demoLogin">
-                <i class="bi bi-play-circle"></i>
-                Login as Demo User
-            </button>
-        </div>
-
         <!-- Footer -->
         <div class="auth-footer">
             <p>Don't have an account? <a href="{{ url_for('auth.register') }}">Create one here</a></p>
@@ -150,25 +141,25 @@
 .auth-container {
     min-height: 100vh;
     display: flex;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: white;
 }
 
 /* Auth Card */
 .auth-card {
     flex: 1;
-    max-width: 450px;
+    max-width: 500px;
     background: white;
-    padding: 3rem 2.5rem;
+    padding: 4rem 3rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border-right: 1px solid var(--border-light);
 }
 
 /* Header */
 .auth-header {
     text-align: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 3rem;
 }
 
 .logo {
@@ -176,42 +167,43 @@
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--primary-main);
 }
 
 .logo i {
-    font-size: 2rem;
+    font-size: 2.25rem;
 }
 
 .auth-header h1 {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .auth-header p {
     color: var(--text-secondary);
-    font-size: 1rem;
+    font-size: 1.125rem;
+    line-height: 1.6;
 }
 
 /* Form */
 .auth-form {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
 }
 
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.75rem;
 }
 
 .form-group label {
     display: block;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     font-size: 0.875rem;
 }
 
@@ -230,7 +222,7 @@
 
 .input-wrapper input {
     width: 100%;
-    padding: 0.875rem 1rem 0.875rem 2.75rem;
+    padding: 1rem 1rem 1rem 2.75rem;
     border: 2px solid var(--border-light);
     border-radius: 12px;
     font-size: 1rem;
@@ -270,7 +262,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
 }
 
 .checkbox-wrapper {
@@ -332,7 +324,7 @@
     background: linear-gradient(135deg, var(--primary-main) 0%, var(--primary-dark) 100%);
     color: white;
     border: none;
-    padding: 1rem;
+    padding: 1.125rem;
     border-radius: 12px;
     font-size: 1rem;
     font-weight: 600;
@@ -383,7 +375,7 @@
 /* Divider */
 .divider {
     text-align: center;
-    margin: 2rem 0;
+    margin: 2.5rem 0;
     position: relative;
 }
 
@@ -407,7 +399,7 @@
 /* Demo Account */
 .demo-account {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
 }
 
 .demo-account p {
@@ -420,7 +412,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
+    padding: 0.875rem 1.75rem;
     border: 2px solid var(--border-light);
     border-radius: 10px;
     color: var(--text-primary);
@@ -461,13 +453,12 @@
 /* Right Panel */
 .auth-panel {
     flex: 1;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    background: var(--bg-secondary);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    padding: 3rem;
-    color: white;
+    padding: 4rem 3rem;
+    color: var(--text-primary);
 }
 
 .panel-content {
@@ -477,13 +468,14 @@
 .panel-content h2 {
     font-size: 2.5rem;
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     line-height: 1.2;
+    color: var(--text-primary);
 }
 
 .panel-content > p {
     font-size: 1.125rem;
-    opacity: 0.9;
+    color: var(--text-secondary);
     margin-bottom: 3rem;
     line-height: 1.6;
 }
@@ -503,26 +495,30 @@
 .feature-icon {
     width: 48px;
     height: 48px;
-    background: rgba(255, 255, 255, 0.2);
+    background: white;
+    border: 1px solid var(--border-light);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .feature-icon i {
     font-size: 1.25rem;
+    color: var(--primary-main);
 }
 
 .feature-text h3 {
     font-size: 1.125rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
+    color: var(--text-primary);
 }
 
 .feature-text p {
-    opacity: 0.8;
+    color: var(--text-secondary);
     line-height: 1.5;
     margin: 0;
 }
@@ -536,18 +532,23 @@
 
 .stat {
     text-align: center;
+    background: white;
+    padding: 1.5rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .stat-number {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--primary-light);
+    color: var(--primary-main);
     margin-bottom: 0.25rem;
 }
 
 .stat-label {
     font-size: 0.75rem;
-    opacity: 0.8;
+    color: var(--text-secondary);
 }
 
 /* Responsive */
@@ -560,17 +561,19 @@
         max-width: 100%;
         margin: 2rem;
         border-radius: 20px;
+        border-right: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
 }
 
 @media (max-width: 768px) {
     .auth-card {
         margin: 1rem;
-        padding: 2rem 1.5rem;
+        padding: 2.5rem 1.5rem;
     }
     
     .auth-header h1 {
-        font-size: 1.75rem;
+        font-size: 2rem;
     }
     
     .panel-content h2 {

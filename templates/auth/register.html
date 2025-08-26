@@ -112,6 +112,19 @@
                 </label>
             </div>
 
+            <div class="form-group">
+                <label for="signup_code">Sign Up Code</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-key input-icon"></i>
+                    <input type="text" 
+                           id="signup_code" 
+                           name="signup_code" 
+                           placeholder="Enter your sign-up code"
+                           required>
+                </div>
+                <small class="form-help">We are only allowing people with codes to sign up right now</small>
+            </div>
+
             <button type="submit" class="btn-primary" id="registerBtn">
                 <span class="btn-text">Create Account</span>
                 <span class="btn-loading">
@@ -210,32 +223,33 @@
     --text-muted: #94A3B8;
     --border-light: #E2E8F0;
     --bg-main: #FFFFFF;
+    --bg-secondary: #F8FAFC;
 }
 
 /* Auth Container */
 .auth-container {
     min-height: 100vh;
     display: flex;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: white;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Auth Card */
 .auth-card {
     flex: 1;
-    max-width: 450px;
+    max-width: 500px;
     background: white;
-    padding: 3rem 2.5rem;
+    padding: 4rem 3rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border-right: 1px solid var(--border-light);
 }
 
 /* Header */
 .auth-header {
     text-align: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 3rem;
 }
 
 .logo {
@@ -243,42 +257,47 @@
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--primary-main);
 }
 
 .logo i {
-    font-size: 2rem;
+    font-size: 2.25rem;
 }
 
 .auth-header h1 {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .auth-header p {
     color: var(--text-secondary);
-    font-size: 1rem;
+    font-size: 1.125rem;
+    line-height: 1.6;
 }
 
 /* Form */
 .auth-form {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
+    overflow: visible;
+    position: relative;
 }
 
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.75rem;
+    overflow: visible;
+    position: relative;
 }
 
 .form-group label {
     display: block;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     font-size: 0.875rem;
 }
 
@@ -297,7 +316,7 @@
 
 .input-wrapper input {
     width: 100%;
-    padding: 0.875rem 1rem 0.875rem 2.75rem;
+    padding: 1rem 1rem 1rem 2.75rem;
     border: 2px solid var(--border-light);
     border-radius: 12px;
     font-size: 1rem;
@@ -374,6 +393,11 @@
     align-items: flex-start;
     gap: 0.75rem;
     cursor: pointer;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+    min-height: 24px;
+    padding: 2px;
 }
 
 .checkbox-wrapper input[type="checkbox"] {
@@ -381,18 +405,26 @@
 }
 
 .checkmark {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     border: 2px solid var(--border-light);
     border-radius: 6px;
     position: relative;
     flex-shrink: 0;
     transition: all 0.3s ease;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.checkbox-wrapper:hover .checkmark {
+    border-color: var(--primary-main);
+    box-shadow: 0 4px 8px rgba(139, 92, 246, 0.2);
 }
 
 .checkbox-wrapper input:checked + .checkmark {
     background: var(--primary-main);
     border-color: var(--primary-main);
+    box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
 }
 
 .checkbox-wrapper input:checked + .checkmark::after {
@@ -402,8 +434,9 @@
     left: 50%;
     transform: translate(-50%, -50%);
     color: white;
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: bold;
+    line-height: 1;
 }
 
 .checkbox-text {
@@ -423,29 +456,29 @@
 }
 
 /* Button */
-.btn-primary {
-    width: 100%;
-    background: linear-gradient(135deg, var(--primary-main) 0%, var(--primary-dark) 100%);
-    color: white;
-    border: none;
-    padding: 1rem;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    font-family: inherit;
+.auth-form .btn-primary {
+    width: 100% !important;
+    background: linear-gradient(135deg, var(--primary-main) 0%, var(--primary-dark) 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 1.125rem !important;
+    border-radius: 12px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+    font-family: inherit !important;
 }
 
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+.auth-form .btn-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3) !important;
 }
 
-.btn-primary:active {
-    transform: translateY(0);
+.auth-form .btn-primary:active {
+    transform: translateY(0) !important;
 }
 
 .btn-loading {
@@ -455,12 +488,12 @@
     gap: 0.5rem;
 }
 
-.btn-primary.loading .btn-text {
-    display: none;
+.auth-form .btn-primary.loading .btn-text {
+    display: none !important;
 }
 
-.btn-primary.loading .btn-loading {
-    display: flex;
+.auth-form .btn-primary.loading .btn-loading {
+    display: flex !important;
 }
 
 .spinner {
@@ -480,7 +513,7 @@
 /* Divider */
 .divider {
     text-align: center;
-    margin: 2rem 0;
+    margin: 2.5rem 0;
     position: relative;
 }
 
@@ -504,7 +537,7 @@
 /* Quick Start */
 .quick-start {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
 }
 
 .quick-start p {
@@ -517,7 +550,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
+    padding: 0.875rem 1.75rem;
     border: 2px solid var(--border-light);
     border-radius: 10px;
     color: var(--text-primary);
@@ -557,13 +590,12 @@
 /* Right Panel */
 .auth-panel {
     flex: 1;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    background: var(--bg-secondary);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    padding: 3rem;
-    color: white;
+    padding: 4rem 3rem;
+    color: var(--text-primary);
 }
 
 .panel-content {
@@ -573,13 +605,14 @@
 .panel-content h2 {
     font-size: 2.5rem;
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     line-height: 1.2;
+    color: var(--text-primary);
 }
 
 .panel-content > p {
     font-size: 1.125rem;
-    opacity: 0.9;
+    color: var(--text-secondary);
     margin-bottom: 3rem;
     line-height: 1.6;
 }
@@ -599,26 +632,30 @@
 .feature-icon {
     width: 48px;
     height: 48px;
-    background: rgba(255, 255, 255, 0.2);
+    background: white;
+    border: 1px solid var(--border-light);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .feature-icon i {
     font-size: 1.25rem;
+    color: var(--primary-main);
 }
 
 .feature-text h3 {
     font-size: 1.125rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
+    color: var(--text-primary);
 }
 
 .feature-text p {
-    opacity: 0.8;
+    color: var(--text-secondary);
     line-height: 1.5;
     margin: 0;
 }
@@ -632,18 +669,23 @@
 
 .stat {
     text-align: center;
+    background: white;
+    padding: 1.5rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .stat-number {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--primary-light);
+    color: var(--primary-main);
     margin-bottom: 0.25rem;
 }
 
 .stat-label {
     font-size: 0.75rem;
-    opacity: 0.8;
+    color: var(--text-secondary);
 }
 
 /* Responsive */
@@ -656,17 +698,19 @@
         max-width: 100%;
         margin: 2rem;
         border-radius: 20px;
+        border-right: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
 }
 
 @media (max-width: 768px) {
     .auth-card {
         margin: 1rem;
-        padding: 2rem 1.5rem;
+        padding: 2.5rem 1.5rem;
     }
     
     .auth-header h1 {
-        font-size: 1.75rem;
+        font-size: 2rem;
     }
     
     .panel-content h2 {
@@ -811,6 +855,12 @@ function initializeFormValidation() {
         
         // Check password minimum length
         if (password.length < 6) {
+            isValid = false;
+        }
+        
+        // Check sign-up code (basic validation - just ensure it's not empty)
+        const signupCode = document.getElementById('signup_code').value;
+        if (!signupCode.trim()) {
             isValid = false;
         }
         

@@ -17,6 +17,7 @@ def create_app(config_object=None):
     
     # Configuration
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+    app.config['SIGNUP_CODE'] = os.environ.get('SIGNUP_CODE', 'VOICE2024')
     
     # Check if UPLOAD_FOLDER environment variable is set
     env_upload_folder = os.environ.get('UPLOAD_FOLDER')

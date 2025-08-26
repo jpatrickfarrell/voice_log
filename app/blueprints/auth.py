@@ -50,11 +50,13 @@ def register():
             email = data.get('email')
             password = data.get('password')
             confirm_password = data.get('confirm_password')
+            signup_code = data.get('signup_code')
         else:
             username = request.form.get('username')
             email = request.form.get('email')
             password = request.form.get('password')
             confirm_password = request.form.get('confirm_password')
+            signup_code = request.form.get('signup_code')
         
         errors = []
         
@@ -70,6 +72,11 @@ def register():
         
         if password != confirm_password:
             errors.append('Passwords do not match')
+        
+        # Validate sign-up code
+        required_signup_code = current_app.config.get('SIGNUP_CODE', 'VOICE2024')
+        if not signup_code or signup_code != required_signup_code:
+            errors.append('Invalid sign-up code')
         
         # Check if user already exists
         current_app.logger.info(f"Checking if username exists: {username}")

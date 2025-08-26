@@ -220,9 +220,9 @@
                                 <i class="bi bi-heart{% if current_user.is_subscribed_to(author.id) %}-fill{% endif %}"></i>
                                 <span class="subscription-text">
                                     {% if current_user.is_subscribed_to(author.id) %}
-                                        Unsubscribe from {{ author.display_name or author.username }} Log
+                                        Unsubscribe
                                     {% else %}
-                                        Subscribe to {{ author.display_name or author.username }} Log
+                                        Subscribe
                                     {% endif %}
                                 </span>
                             </button>
@@ -1320,14 +1320,14 @@ function toggleSubscription(username, buttonElement) {
                 // Now subscribed
                 buttonElement.dataset.subscribed = 'true';
                 icon.className = 'bi bi-heart-fill';
-                text.textContent = `Unsubscribe from ${username} Log`;
+                text.textContent = 'Unsubscribe';
                 buttonElement.classList.remove('btn-outline-primary');
                 buttonElement.classList.add('btn-primary');
             } else {
                 // Now unsubscribed
                 buttonElement.dataset.subscribed = 'false';
                 icon.className = 'bi bi-heart';
-                text.textContent = `Subscribe to ${username} Log`;
+                text.textContent = 'Subscribe';
                 buttonElement.classList.remove('btn-primary');
                 buttonElement.classList.add('btn-outline-primary');
             }

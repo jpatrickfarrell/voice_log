@@ -180,7 +180,7 @@
                                     {% if current_user.is_subscribed_to(post.user_id) %}
                                         Unsubscribe
                                     {% else %}
-                                        Subscribe to {{ post.display_name or post.username }} Log
+                                        Subscribe
                                     {% endif %}
                                 </span>
                             </button>
@@ -728,25 +728,8 @@ function toggleSubscription(username, buttonElement) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Update button state
-            const icon = buttonElement.querySelector('i');
-            const text = buttonElement.querySelector('.subscription-text');
-            
-            if (data.subscribed) {
-                // Now subscribed
-                buttonElement.dataset.subscribed = 'true';
-                icon.className = 'bi bi-heart-fill';
-                text.textContent = 'Unsubscribe';
-                buttonElement.classList.remove('btn-outline-primary');
-                buttonElement.classList.add('btn-primary');
-            } else {
-                // Now unsubscribed
-                buttonElement.dataset.subscribed = 'false';
-                icon.className = 'bi bi-heart';
-                text.textContent = `Subscribe to ${username} Log`;
-                buttonElement.classList.remove('btn-primary');
-                buttonElement.classList.add('btn-outline-primary');
-            }
+            // Update ALL subscription buttons for this user across all post cards
+            updateAllSubscriptionButtons(username, data.subscribed);
             
             // Show success message
             showNotification(data.message, 'success');
@@ -757,6 +740,41 @@ function toggleSubscription(username, buttonElement) {
     .catch(error => {
         console.error('Error:', error);
         showNotification(`Failed to ${action}`, 'error');
+    });
+}
+
+function updateAllSubscriptionButtons(username, isSubscribed) {
+    // Find all subscription buttons for this user
+    const allButtons = document.querySelectorAll(`.subscription-btn[data-username="${username}"]`);
+    
+    allButtons.forEach(button => {
+        // Update the button's data attribute
+        button.dataset.subscribed = isSubscribed.toString();
+        
+        // Update the icon
+        const icon = button.querySelector('i');
+        if (isSubscribed) {
+            icon.className = 'bi bi-heart-fill';
+        } else {
+            icon.className = 'bi bi-heart';
+        }
+        
+        // Update the text
+        const text = button.querySelector('.subscription-text');
+        if (isSubscribed) {
+            text.textContent = 'Unsubscribe';
+        } else {
+            text.textContent = 'Subscribe';
+        }
+        
+        // Update the button styling
+        if (isSubscribed) {
+            button.classList.remove('btn-outline-primary');
+            button.classList.add('btn-primary');
+        } else {
+            button.classList.remove('btn-primary');
+            button.classList.add('btn-outline-primary');
+        }
     });
 }
 

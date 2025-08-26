@@ -138,6 +138,10 @@
                         <i class="bi bi-compass"></i>
                         <span>Discover</span>
                     </a>
+                    <a href="{{ url_for('main.subscriptions') }}" class="nav-item {% if request.endpoint == 'main.subscriptions' %}active{% endif %}">
+                        <i class="bi bi-heart"></i>
+                        <span>Subscriptions</span>
+                    </a>
                 </div>
                 
                 <div class="nav-section">

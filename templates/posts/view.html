@@ -212,9 +212,25 @@
                             <i class="bi bi-plus-circle"></i> Create Your Own
                         </a>
                     {% else %}
-                        <a href="{{ url_for('auth.register') }}" class="btn btn-success w-100">
-                            <i class="bi bi-person-plus"></i> Join Voice Log
-                        </a>
+                        {% if current_user.is_authenticated and current_user.username != author.username %}
+                            <button class="btn btn-outline-primary w-100 subscription-btn" 
+                                    data-username="{{ author.username }}"
+                                    data-subscribed="{{ 'true' if current_user.is_subscribed_to(author.id) else 'false' }}"
+                                    onclick="toggleSubscription('{{ author.username }}', this)">
+                                <i class="bi bi-heart{% if current_user.is_subscribed_to(author.id) %}-fill{% endif %}"></i>
+                                <span class="subscription-text">
+                                    {% if current_user.is_subscribed_to(author.id) %}
+                                        Unsubscribe from {{ author.display_name or author.username }} Log
+                                    {% else %}
+                                        Subscribe to {{ author.display_name or author.username }} Log
+                                    {% endif %}
+                                </span>
+                            </button>
+                        {% else %}
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary w-100">
+                                <i class="bi bi-heart"></i> Subscribe to {{ author.display_name or author.username }} Log
+                            </a>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
@@ -1280,6 +1296,52 @@ function showToast(message, type = 'info') {
     setTimeout(() => {
         toast.remove();
     }, 5000);
+}
+
+// Subscription functionality
+function toggleSubscription(username, buttonElement) {
+    const isSubscribed = buttonElement.dataset.subscribed === 'true';
+    const action = isSubscribed ? 'unsubscribe' : 'subscribe';
+    
+    fetch(`/${action}/${username}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update button state
+            const icon = buttonElement.querySelector('i');
+            const text = buttonElement.querySelector('.subscription-text');
+            
+            if (data.subscribed) {
+                // Now subscribed
+                buttonElement.dataset.subscribed = 'true';
+                icon.className = 'bi bi-heart-fill';
+                text.textContent = `Unsubscribe from ${username} Log`;
+                buttonElement.classList.remove('btn-outline-primary');
+                buttonElement.classList.add('btn-primary');
+            } else {
+                // Now unsubscribed
+                buttonElement.dataset.subscribed = 'false';
+                icon.className = 'bi bi-heart';
+                text.textContent = `Subscribe to ${username} Log`;
+                buttonElement.classList.remove('btn-primary');
+                buttonElement.classList.add('btn-outline-primary');
+            }
+            
+            // Show success message
+            showToast(data.message, 'success');
+        } else {
+            showToast(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast(`Failed to ${action}`, 'error');
+    });
 }
 </script>
 {% endblock %}

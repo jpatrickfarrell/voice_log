@@ -1,7 +1,8 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, abort
 from flask_login import current_user, login_required
 from app.models.voice_post import VoicePost
 from app.models.user import User
+from app.models.tag import Tag
 
 main_bp = Blueprint('main', __name__)
 
@@ -49,7 +50,6 @@ def discover():
     posts = VoicePost.get_public_posts(limit=limit, offset=offset)
     
     # Get all available tags for filtering
-    from app.models.tag import Tag
     tags = Tag.get_all()
     
     # Check if there are more posts
@@ -65,7 +65,6 @@ def discover():
 def user_posts(username):
     """User-specific discovery page - browse posts by a specific user"""
     # Get the user
-    from app.models.user import User
     user = User.get_by_username(username)
     
     if not user:
@@ -79,7 +78,6 @@ def user_posts(username):
     posts = VoicePost.get_public_posts_by_user(user.id, limit=limit, offset=offset)
     
     # Get all available tags for filtering
-    from app.models.tag import Tag
     tags = Tag.get_all()
     
     # Check if there are more posts
@@ -96,6 +94,50 @@ def user_posts(username):
 def about():
     """About page"""
     return render_template('main/about.html')
+
+@main_bp.route('/subscriptions')
+@login_required
+def subscriptions():
+    """User's subscription management page"""
+    user_subscriptions = current_user.get_subscriptions()
+    return render_template('main/subscriptions.html', subscriptions=user_subscriptions)
+
+@main_bp.route('/subscribe/<username>', methods=['POST'])
+@login_required
+def subscribe_to_user(username):
+    """Subscribe to a user's voice log"""
+    if username == current_user.username:
+        return jsonify({'success': False, 'message': 'You cannot subscribe to yourself'}), 400
+    
+    user_to_subscribe = User.get_by_username(username)
+    if not user_to_subscribe:
+        return jsonify({'success': False, 'message': 'User not found'}), 404
+    
+    if current_user.subscribe_to(user_to_subscribe.id):
+        return jsonify({
+            'success': True, 
+            'message': f'Subscribed to {user_to_subscribe.display_name or user_to_subscribe.username}',
+            'subscribed': True
+        })
+    else:
+        return jsonify({'success': False, 'message': 'Failed to subscribe'}), 500
+
+@main_bp.route('/unsubscribe/<username>', methods=['POST'])
+@login_required
+def unsubscribe_from_user(username):
+    """Unsubscribe from a user's voice log"""
+    user_to_unsubscribe = User.get_by_username(username)
+    if not user_to_unsubscribe:
+        return jsonify({'success': False, 'message': 'User not found'}), 404
+    
+    if current_user.unsubscribe_from(user_to_unsubscribe.id):
+        return jsonify({
+            'success': True, 
+            'message': f'Unsubscribed from {user_to_unsubscribe.display_name or user_to_unsubscribe.username}',
+            'subscribed': False
+        })
+    else:
+        return jsonify({'success': False, 'message': 'Failed to unsubscribe'}), 500
 
 @main_bp.route('/api/stats')
 def api_stats():

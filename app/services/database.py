@@ -206,6 +206,27 @@ def init_database(db_path):
         conn.execute('CREATE INDEX IF NOT EXISTS idx_post_tags_tag_id ON post_tags (tag_id)')
         print("Tag indexes created/verified")
         
+        # Create subscriptions table
+        print("Creating subscriptions table...")
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS subscriptions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                subscriber_id INTEGER NOT NULL,
+                creator_id INTEGER NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (subscriber_id) REFERENCES users (id) ON DELETE CASCADE,
+                FOREIGN KEY (creator_id) REFERENCES users (id) ON DELETE CASCADE,
+                UNIQUE(subscriber_id, creator_id)
+            )
+        ''')
+        print("Subscriptions table created/verified")
+        
+        # Create indexes for subscriptions
+        print("Creating subscription indexes...")
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_subscriptions_subscriber_id ON subscriptions (subscriber_id)')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_subscriptions_creator_id ON subscriptions (creator_id)')
+        print("Subscription indexes created/verified")
+        
         # Insert some default tags
         print("Inserting default tags...")
         default_tags = [

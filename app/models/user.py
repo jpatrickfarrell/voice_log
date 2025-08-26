@@ -146,6 +146,8 @@ class User(UserMixin):
                             'password_hash': row[3],
                             'is_admin': row[4],
                             'is_active': row[5],
+                            'created_at': row[6] if len(row) > 6 else None,
+                            'updated_at': row[7] if len(row) > 7 else None,
                             'ai_bio': row[8] if len(row) > 8 else None,
                             'ai_writing_samples': row[9] if len(row) > 9 else None,
                             'display_name': row[10] if len(row) > 10 else None,
@@ -154,9 +156,7 @@ class User(UserMixin):
                             'instagram': row[13] if len(row) > 13 else None,
                             'linkedin': row[14] if len(row) > 14 else None,
                             'twitter': row[15] if len(row) > 15 else None,
-                            'facebook': row[16] if len(row) > 16 else None,
-                            'created_at': row[6],
-                            'updated_at': row[7]
+                            'facebook': row[16] if len(row) > 16 else None
                         }
                     
                     return cls(
@@ -221,8 +221,17 @@ class User(UserMixin):
                             'password_hash': row[3],
                             'is_admin': row[4],
                             'is_active': row[5],
-                            'created_at': row[6],
-                            'updated_at': row[7]
+                            'created_at': row[6] if len(row) > 6 else None,
+                            'updated_at': row[7] if len(row) > 7 else None,
+                            'ai_bio': row[8] if len(row) > 8 else None,
+                            'ai_writing_samples': row[9] if len(row) > 9 else None,
+                            'display_name': row[10] if len(row) > 10 else None,
+                            'website': row[11] if len(row) > 11 else None,
+                            'short_bio': row[12] if len(row) > 12 else None,
+                            'instagram': row[13] if len(row) > 13 else None,
+                            'linkedin': row[14] if len(row) > 14 else None,
+                            'twitter': row[15] if len(row) > 15 else None,
+                            'facebook': row[16] if len(row) > 16 else None
                         }
                         current_app.logger.info(f"Using tuple, user_data: {user_data}")
                     
@@ -234,6 +243,15 @@ class User(UserMixin):
                         password_hash=user_data['password_hash'],
                         is_admin=user_data.get('is_admin', False),
                         is_active=user_data.get('is_active', True),
+                        ai_bio=user_data.get('ai_bio'),
+                        ai_writing_samples=user_data.get('ai_writing_samples'),
+                        display_name=user_data.get('display_name'),
+                        website=user_data.get('website'),
+                        short_bio=user_data.get('short_bio'),
+                        instagram=user_data.get('instagram'),
+                        linkedin=user_data.get('linkedin'),
+                        twitter=user_data.get('twitter'),
+                        facebook=user_data.get('facebook'),
                         created_at=user_data.get('created_at'),
                         updated_at=user_data.get('updated_at')
                     )
@@ -394,6 +412,86 @@ class User(UserMixin):
                 (self.id,)
             ).fetchone()
             return row['count'] if row else 0
+
+    def subscribe_to(self, creator_id):
+        """Subscribe to another user's voice log"""
+        if self.id == creator_id:
+            return False  # Can't subscribe to yourself
+        
+        try:
+            with get_db(current_app.config['DATABASE_PATH']) as conn:
+                conn.execute(
+                    'INSERT OR IGNORE INTO subscriptions (subscriber_id, creator_id) VALUES (?, ?)',
+                    (self.id, creator_id)
+                )
+                return True
+        except Exception as e:
+            current_app.logger.error(f"Error subscribing to user {creator_id}: {e}")
+            return False
+
+    def unsubscribe_from(self, creator_id):
+        """Unsubscribe from another user's voice log"""
+        try:
+            with get_db(current_app.config['DATABASE_PATH']) as conn:
+                conn.execute(
+                    'DELETE FROM subscriptions WHERE subscriber_id = ? AND creator_id = ?',
+                    (self.id, creator_id)
+                )
+                return True
+        except Exception as e:
+            current_app.logger.error(f"Error unsubscribing from user {creator_id}: {e}")
+            return False
+
+    def is_subscribed_to(self, creator_id):
+        """Check if user is subscribed to another user"""
+        try:
+            with get_db(current_app.config['DATABASE_PATH']) as conn:
+                row = conn.execute(
+                    'SELECT id FROM subscriptions WHERE subscriber_id = ? AND creator_id = ?',
+                    (self.id, creator_id)
+                ).fetchone()
+                return row is not None
+        except Exception as e:
+            current_app.logger.error(f"Error checking subscription status: {e}")
+            return False
+
+    def get_subscriptions(self):
+        """Get list of users this user is subscribed to"""
+        try:
+            with get_db(current_app.config['DATABASE_PATH']) as conn:
+                rows = conn.execute('''
+                    SELECT u.id, u.username, u.display_name, s.created_at
+                    FROM subscriptions s
+                    JOIN users u ON s.creator_id = u.id
+                    WHERE s.subscriber_id = ?
+                    ORDER BY s.created_at DESC
+                ''', (self.id,)).fetchall()
+                
+                subscriptions = []
+                for row in rows:
+                    subscriptions.append({
+                        'id': row['id'],
+                        'username': row['username'],
+                        'display_name': row['display_name'],
+                        'created_at': row['created_at']
+                    })
+                return subscriptions
+        except Exception as e:
+            current_app.logger.error(f"Error getting subscriptions: {e}")
+            return []
+
+    def get_subscriber_count(self):
+        """Get count of users subscribed to this user"""
+        try:
+            with get_db(current_app.config['DATABASE_PATH']) as conn:
+                row = conn.execute(
+                    'SELECT COUNT(*) as count FROM subscriptions WHERE creator_id = ?',
+                    (self.id,)
+                ).fetchone()
+                return row['count'] if row else 0
+        except Exception as e:
+            current_app.logger.error(f"Error getting subscriber count: {e}")
+            return 0
 
     def __repr__(self):
         return f'<User {self.username}>'

@@ -170,13 +170,28 @@
                     </div>
                     
                     <div class="post-actions">
+                        {% if current_user.is_authenticated and current_user.username != post.username %}
+                            <button class="btn btn-sm btn-outline-primary subscription-btn" 
+                                    data-username="{{ post.username }}"
+                                    data-subscribed="{{ 'true' if current_user.is_subscribed_to(post.user_id) else 'false' }}"
+                                    onclick="toggleSubscription('{{ post.username }}', this)">
+                                <i class="bi bi-heart{% if current_user.is_subscribed_to(post.user_id) %}-fill{% endif %}"></i>
+                                <span class="subscription-text">
+                                    {% if current_user.is_subscribed_to(post.user_id) %}
+                                        Unsubscribe
+                                    {% else %}
+                                        Subscribe to {{ post.display_name or post.username }} Log
+                                    {% endif %}
+                                </span>
+                            </button>
+                        {% endif %}
                         <button class="btn btn-sm btn-outline-secondary" 
                                 onclick="sharePost('{{ post.title }}', '{{ url_for('posts.view_post', slug=post.slug, _external=True) }}')"
                                 title="Share">
                             <i class="bi bi-share"></i>
                         </button>
                         <a href="{{ url_for('posts.view_post', slug=post.slug) }}" 
-                           class="btn btn-sm btn-primary">
+                           class="btn btn-primary">
                             Listen
                         </a>
                     </div>
@@ -697,6 +712,73 @@ function initializeLoadMore() {
 // Share functionality
 function sharePost(title, url) {
     VoiceLog.sharePost(title, url);
+}
+
+// Subscription functionality
+function toggleSubscription(username, buttonElement) {
+    const isSubscribed = buttonElement.dataset.subscribed === 'true';
+    const action = isSubscribed ? 'unsubscribe' : 'subscribe';
+    
+    fetch(`/${action}/${username}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update button state
+            const icon = buttonElement.querySelector('i');
+            const text = buttonElement.querySelector('.subscription-text');
+            
+            if (data.subscribed) {
+                // Now subscribed
+                buttonElement.dataset.subscribed = 'true';
+                icon.className = 'bi bi-heart-fill';
+                text.textContent = 'Unsubscribe';
+                buttonElement.classList.remove('btn-outline-primary');
+                buttonElement.classList.add('btn-primary');
+            } else {
+                // Now unsubscribed
+                buttonElement.dataset.subscribed = 'false';
+                icon.className = 'bi bi-heart';
+                text.textContent = `Subscribe to ${username} Log`;
+                buttonElement.classList.remove('btn-primary');
+                buttonElement.classList.add('btn-outline-primary');
+            }
+            
+            // Show success message
+            showNotification(data.message, 'success');
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification(`Failed to ${action}`, 'error');
+    });
+}
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Add to page
+    const container = document.querySelector('.content-container');
+    container.insertBefore(notification, container.firstChild);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
 }
 </script>
 {% endblock %}

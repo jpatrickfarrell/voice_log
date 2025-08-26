@@ -86,8 +86,8 @@
             </div>
         </div>
 
-        <div class="audio-player-content">
-            <h3>Listen to this post</h3>
+        <div class="audio-player-content {% if not post.header_image or not post.header_image.strip() %}no-header-image{% endif %}">
+            <h3 class="{% if not post.header_image or not post.header_image.strip() %}no-header-image{% endif %}">Listen to this post</h3>
             <div class="audio-player-container">
                 {% if post.converted_mp3_path %}
                     <!-- Use converted MP3 file -->
@@ -331,6 +331,68 @@
 .post-tags .tag:hover {
     transform: translateY(-1px);
     box-shadow: var(--shadow-sm);
+}
+
+/* Audio player content styling for when no header image */
+.audio-player-content h3.no-header-image {
+    color: var(--text-primary);
+    text-shadow: none;
+    font-weight: 600;
+}
+
+.audio-player-content.no-header-image {
+    color: var(--text-primary);
+}
+
+/* Audio player styling when no header image - using gradient_cards style */
+.audio-player-section:not([style*="background-image"]) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.audio-player-section:not([style*="background-image"])::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    opacity: 0.1;
+    transition: opacity 0.3s ease;
+    border-radius: inherit;
+}
+
+.audio-player-section:not([style*="background-image"]) .audio-player-content {
+    position: relative;
+    z-index: 1;
+    color: var(--text-primary);
+    text-shadow: none;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+}
+
+.audio-player-section:not([style*="background-image"]) .audio-player-content h3 {
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Style the audio player when no header image */
+.audio-player-section:not([style*="background-image"]) .audio-player-container {
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+}
+
+.audio-player-section:not([style*="background-image"]) audio {
+    filter: none;
 }
 
 .post-actions {

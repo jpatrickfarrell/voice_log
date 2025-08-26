@@ -11,55 +11,53 @@
 {% block content %}
 <!-- Hero Section -->
 <div class="hero-section">
-    <div class="hero-gradient-bg">
-        <div class="hero-content">
-            <div class="hero-left">
-                <h1 class="hero-title">Transform Your Voice Into <span class="text-gradient">Listenable</span> Blog Posts</h1>
-                <p class="hero-subtitle">Record, transcribe, and publish voice notes instantly. Create engaging content with embedded audio, automatic transcriptions, and AI-generated summaries.</p>
-                
-                <div class="hero-actions">
-                    {% if current_user.is_authenticated %}
-                        <a href="{{ url_for('posts.create_post') }}" class="btn btn-primary-gradient btn-lg">
-                            <i class="bi bi-plus-circle"></i> Create Your First Post
-                        </a>
-                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light btn-lg">
-                            <i class="bi bi-speedometer2"></i> Go to Dashboard
-                        </a>
-                    {% else %}
-                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary-gradient btn-lg">
-                            <i class="bi bi-person-plus"></i> Get Started Free
-                        </a>
-                        <a href="{{ url_for('main.discover') }}" class="btn btn-outline-light btn-lg">
-                            <i class="bi bi-compass"></i> Discover Posts
-                        </a>
-                    {% endif %}
-                </div>
-            </div>
+    <div class="hero-content">
+        <div class="hero-left">
+            <h1 class="hero-title">Transform Your Voice Into <span class="text-gradient">Listenable</span> Blog Posts</h1>
+            <p class="hero-subtitle">Record, transcribe, and publish voice notes instantly. Create engaging content with embedded audio, automatic transcriptions, and AI-generated summaries.</p>
             
-            <div class="hero-right">
-                <div class="hero-demo">
-                    <div class="demo-card">
-                        <div class="demo-header">
-                            <i class="bi bi-mic-fill text-gradient"></i>
-                            <span>Voice Recording</span>
+            <div class="hero-actions">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('posts.create_post') }}" class="btn btn-primary-gradient btn-lg">
+                        <i class="bi bi-plus-circle"></i> Create Your First Post
+                    </a>
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-speedometer2"></i> Go to Dashboard
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary-gradient btn-lg">
+                        <i class="bi bi-person-plus"></i> Get Started Free
+                    </a>
+                    <a href="{{ url_for('main.discover') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-compass"></i> Discover Posts
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="hero-right">
+            <div class="hero-demo">
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <i class="bi bi-mic-fill text-gradient"></i>
+                        <span>Voice Recording</span>
+                    </div>
+                    <div class="demo-waveform">
+                        <div class="waveform-bars">
+                            <div class="bar" style="height: 20px;"></div>
+                            <div class="bar" style="height: 35px;"></div>
+                            <div class="bar" style="height: 15px;"></div>
+                            <div class="bar" style="height: 45px;"></div>
+                            <div class="bar" style="height: 25px;"></div>
+                            <div class="bar" style="height: 30px;"></div>
+                            <div class="bar" style="height: 40px;"></div>
+                            <div class="bar" style="height: 20px;"></div>
                         </div>
-                        <div class="demo-waveform">
-                            <div class="waveform-bars">
-                                <div class="bar" style="height: 20px;"></div>
-                                <div class="bar" style="height: 35px;"></div>
-                                <div class="bar" style="height: 15px;"></div>
-                                <div class="bar" style="height: 45px;"></div>
-                                <div class="bar" style="height: 25px;"></div>
-                                <div class="bar" style="height: 30px;"></div>
-                                <div class="bar" style="height: 40px;"></div>
-                                <div class="bar" style="height: 20px;"></div>
-                            </div>
-                        </div>
-                        <div class="demo-features">
-                            <div class="feature-tag">Auto Transcript</div>
-                            <div class="feature-tag">AI Summary</div>
-                            <div class="feature-tag">Public Link</div>
-                        </div>
+                    </div>
+                    <div class="demo-features">
+                        <div class="feature-tag">Auto Transcript</div>
+                        <div class="feature-tag">AI Summary</div>
+                        <div class="feature-tag">Public Link</div>
                     </div>
                 </div>
             </div>
@@ -69,74 +67,58 @@
 
 <!-- Features Section -->
 <div class="features-section">
-    <div class="container">
-        <div class="row">
-            <div class="col-12 text-center mb-5">
-                <h2 class="section-title">Why Voice Log?</h2>
-                <p class="section-subtitle">Everything you need to turn your voice into engaging content</p>
+    <div class="section-header">
+        <h2 class="section-title">Why Voice Log?</h2>
+        <p class="section-subtitle">Everything you need to turn your voice into engaging content</p>
+    </div>
+    
+    <div class="features-grid">
+        <div class="feature-card gradient-card-blue">
+            <div class="feature-icon">
+                <i class="bi bi-mic"></i>
             </div>
+            <h3>Record Anywhere</h3>
+            <p>Upload audio from any device. Supports all major audio formats with automatic optimization for the web.</p>
         </div>
         
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="feature-card gradient-card-blue">
-                    <div class="feature-icon">
-                        <i class="bi bi-mic"></i>
-                    </div>
-                    <h3>Record Anywhere</h3>
-                    <p>Upload audio from any device. Supports all major audio formats with automatic optimization for the web.</p>
-                </div>
+        <div class="feature-card gradient-card-purple">
+            <div class="feature-icon">
+                <i class="bi bi-file-text"></i>
             </div>
-            
-            <div class="col-md-4">
-                <div class="feature-card gradient-card-purple">
-                    <div class="feature-icon">
-                        <i class="bi bi-file-text"></i>
-                    </div>
-                    <h3>Auto Transcription</h3>
-                    <p>AI-powered transcription turns your voice into searchable text with high accuracy using OpenAI Whisper.</p>
-                </div>
+            <h3>Auto Transcription</h3>
+            <p>AI-powered transcription turns your voice into searchable text with high accuracy using OpenAI Whisper.</p>
+        </div>
+        
+        <div class="feature-card gradient-card-green">
+            <div class="feature-icon">
+                <i class="bi bi-lightning"></i>
             </div>
-            
-            <div class="col-md-4">
-                <div class="feature-card gradient-card-green">
-                    <div class="feature-icon">
-                        <i class="bi bi-lightning"></i>
-                    </div>
-                    <h3>Smart Summaries</h3>
-                    <p>Generate compelling summaries automatically to give your audience a preview of your content.</p>
-                </div>
+            <h3>Smart Summaries</h3>
+            <p>Generate compelling summaries automatically to give your audience a preview of your content.</p>
+        </div>
+        
+        <div class="feature-card gradient-card-orange">
+            <div class="feature-icon">
+                <i class="bi bi-link-45deg"></i>
             </div>
-            
-            <div class="col-md-4">
-                <div class="feature-card gradient-card-orange">
-                    <div class="feature-icon">
-                        <i class="bi bi-link-45deg"></i>
-                    </div>
-                    <h3>Instant Publishing</h3>
-                    <p>Get a public permalink immediately. Share your voice posts anywhere with embedded audio players.</p>
-                </div>
+            <h3>Instant Publishing</h3>
+            <p>Get a public permalink immediately. Share your voice posts anywhere with embedded audio players.</p>
+        </div>
+        
+        <div class="feature-card gradient-card-pink">
+            <div class="feature-icon">
+                <i class="bi bi-shield-check"></i>
             </div>
-            
-            <div class="col-md-4">
-                <div class="feature-card gradient-card-pink">
-                    <div class="feature-icon">
-                        <i class="bi bi-shield-check"></i>
-                    </div>
-                    <h3>Privacy Controls</h3>
-                    <p>Choose public, unlisted, or private posts. Control who can access your voice content.</p>
-                </div>
+            <h3>Privacy Controls</h3>
+            <p>Choose public, unlisted, or private posts. Control who can access your voice content.</p>
+        </div>
+        
+        <div class="feature-card gradient-card-indigo">
+            <div class="feature-icon">
+                <i class="bi bi-phone"></i>
             </div>
-            
-            <div class="col-md-4">
-                <div class="feature-card gradient-card-indigo">
-                    <div class="feature-icon">
-                        <i class="bi bi-phone"></i>
-                    </div>
-                    <h3>Mobile Optimized</h3>
-                    <p>Perfect for recording on your phone. Responsive design works seamlessly across all devices.</p>
-                </div>
-            </div>
+            <h3>Mobile Optimized</h3>
+            <p>Perfect for recording on your phone. Responsive design works seamlessly across all devices.</p>
         </div>
     </div>
 </div>
@@ -144,106 +126,100 @@
 <!-- Recent Posts Section -->
 {% if posts %}
 <div class="recent-posts-section">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="section-title">Recent Voice Posts</h2>
-            <a href="{{ url_for('main.discover') }}" class="view-all-link">
-                View All <i class="bi bi-arrow-right"></i>
-            </a>
-        </div>
-        
-        <div class="row g-4">
-            {% for post in posts[:6] %}
-            <div class="col-lg-4 col-md-6">
-                <div class="post-card">
-                    <div class="post-card-header">
-                        <div class="post-meta">
-                            <span class="author">{{ post.display_name or post.username or 'Anonymous' }}</span>
-                            <span class="date">
-                                {% if post.created_at %}
-                                    {% if post.created_at is string %}
-                                        {% set date_str = post.created_at %}
-                                        {% if date_str|length > 19 %}
-                                            {% set date_parts = date_str.split(' ') %}
-                                            {% set date_only = date_parts[0] %}
-                                            {% set year = date_only.split('-')[0] %}
-                                            {% set month = date_only.split('-')[1] %}
-                                            {% set day = date_only.split('-')[2] %}
-                                            {% set month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] %}
-                                            {{ month_names[month|int - 1] }} {{ day|int }}, {{ year }}
-                                        {% else %}
-                                            {{ date_str }}
-                                        {% endif %}
-                                    {% else %}
-                                        {{ post.created_at.strftime('%B %d, %Y') }}
-                                    {% endif %}
+    <div class="section-header">
+        <h2 class="section-title">Recent Voice Posts</h2>
+        <a href="{{ url_for('main.discover') }}" class="view-all-link">
+            View All <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+    
+    <div class="posts-grid">
+        {% for post in posts[:6] %}
+        <div class="post-card">
+            <div class="post-card-header">
+                <div class="post-meta">
+                    <span class="author">{{ post.display_name or post.username or 'Anonymous' }}</span>
+                    <span class="date">
+                        {% if post.created_at %}
+                            {% if post.created_at is string %}
+                                {% set date_str = post.created_at %}
+                                {% if date_str|length > 19 %}
+                                    {% set date_parts = date_str.split(' ') %}
+                                    {% set date_only = date_parts[0] %}
+                                    {% set year = date_only.split('-')[0] %}
+                                    {% set month = date_only.split('-')[1] %}
+                                    {% set day = date_only.split('-')[2] %}
+                                    {% set month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] %}
+                                    {{ month_names[month|int - 1] }} {{ day|int }}, {{ year }}
                                 {% else %}
-                                    Unknown date
+                                    {{ date_str }}
                                 {% endif %}
-                            </span>
-                        </div>
-                        <div class="post-duration">{{ post.format_duration() }}</div>
-                    </div>
-                    
-                    <div class="post-card-content">
-                        <h3 class="post-title">
-                            <a href="{{ url_for('posts.view_post', slug=post.slug) }}">{{ post.title }}</a>
-                        </h3>
-                        
-                        {% if post.summary %}
-                        <p class="post-summary">
-                            {% set clean_summary = post.summary|striptags %}
-                            {{ clean_summary[:120] }}{% if clean_summary|length > 120 %}...{% endif %}
-                        </p>
+                            {% else %}
+                                {{ post.created_at.strftime('%B %d, %Y') }}
+                            {% endif %}
+                        {% else %}
+                            Unknown date
                         {% endif %}
-                    </div>
-                    
-                    <div class="post-card-footer">
-                        <div class="post-stats">
-                            <span class="stat">
-                                <i class="bi bi-eye"></i>
-                                {{ post.get_analytics()['view_count'] }}
-                            </span>
-                            <span class="stat">
-                                <i class="bi bi-play-circle"></i>
-                                {{ post.get_analytics()['play_count'] }}
-                            </span>
-                        </div>
-                        
-                        <div class="post-actions">
-                            <a href="{{ url_for('posts.view_post', slug=post.slug) }}" class="btn btn-sm btn-outline-primary">
-                                Listen
-                            </a>
-                        </div>
-                    </div>
+                    </span>
+                </div>
+                <div class="post-duration">{{ post.format_duration() }}</div>
+            </div>
+            
+            <div class="post-card-content">
+                <h3 class="post-title">
+                    <a href="{{ url_for('posts.view_post', slug=post.slug) }}">{{ post.title }}</a>
+                </h3>
+                
+                {% if post.summary %}
+                <p class="post-summary">
+                    {% set clean_summary = post.summary|striptags %}
+                    {{ clean_summary[:120] }}{% if clean_summary|length > 120 %}...{% endif %}
+                </p>
+                {% endif %}
+            </div>
+            
+            <div class="post-card-footer">
+                <div class="post-stats">
+                    <span class="stat">
+                        <i class="bi bi-eye"></i>
+                        {{ post.get_analytics()['view_count'] }}
+                    </span>
+                    <span class="stat">
+                        <i class="bi bi-play-circle"></i>
+                        {{ post.get_analytics()['play_count'] }}
+                    </span>
+                </div>
+                
+                <div class="post-actions">
+                    <a href="{{ url_for('posts.view_post', slug=post.slug) }}" class="btn btn-sm btn-outline-primary">
+                        Listen
+                    </a>
                 </div>
             </div>
-            {% endfor %}
         </div>
+        {% endfor %}
     </div>
 </div>
 {% endif %}
 
 <!-- CTA Section -->
 <div class="cta-section">
-    <div class="container">
-        <div class="cta-card gradient-card-primary">
-            <div class="row align-items-center">
-                <div class="col-lg-8">
-                    <h2>Ready to Start Sharing Your Voice?</h2>
-                    <p class="mb-0">Join Voice Log today and transform the way you create and share content. No setup required - just record and publish.</p>
-                </div>
-                <div class="col-lg-4 text-lg-end">
-                    {% if not current_user.is_authenticated %}
-                        <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg">
-                            Get Started Free
-                        </a>
-                    {% else %}
-                        <a href="{{ url_for('posts.create_post') }}" class="btn btn-light btn-lg">
-                            Create Post
-                        </a>
-                    {% endif %}
-                </div>
+    <div class="cta-card gradient-card-primary">
+        <div class="cta-content">
+            <div class="cta-text">
+                <h2>Ready to Start Sharing Your Voice?</h2>
+                <p>Join Voice Log today and transform the way you create and share content. No setup required - just record and publish.</p>
+            </div>
+            <div class="cta-action">
+                {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg">
+                        Get Started Free
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('posts.create_post') }}" class="btn btn-light btn-lg">
+                        Create Post
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -254,28 +230,8 @@
 <style>
 /* Hero Section Styles */
 .hero-section {
+    padding: 4rem 0;
     margin-bottom: 0;
-    min-height: calc(100vh - 80px);
-}
-
-.hero-gradient-bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: calc(100vh - 80px);
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-}
-
-.hero-gradient-bg::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
-    z-index: 1;
 }
 
 .hero-content {
@@ -285,9 +241,7 @@
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 2rem;
-    position: relative;
-    z-index: 2;
-    height: 100%;
+    gap: 4rem;
 }
 
 .hero-left {
@@ -300,6 +254,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    max-width: 450px;
 }
 
 /* Responsive Design */
@@ -308,11 +263,11 @@
         flex-direction: column;
         text-align: center;
         padding: 0 1rem;
+        gap: 2rem;
     }
     
     .hero-left {
         max-width: 100%;
-        margin-bottom: 2rem;
     }
     
     .hero-title {
@@ -322,6 +277,10 @@
     .hero-actions {
         justify-content: center;
     }
+    
+    .hero-right {
+        max-width: 100%;
+    }
 }
 
 .hero-title {
@@ -329,11 +288,11 @@
     font-weight: 700;
     line-height: 1.2;
     margin-bottom: 1.5rem;
-    color: white;
+    color: var(--text-primary);
 }
 
 .text-gradient {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -341,7 +300,7 @@
 
 .hero-subtitle {
     font-size: 1.25rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-secondary);
     margin-bottom: 2rem;
     line-height: 1.6;
 }
@@ -366,17 +325,16 @@
     color: white;
 }
 
-.btn-outline-light {
-    border: 2px solid rgba(255, 255, 255, 0.8);
-    color: white;
+.btn-outline-primary {
+    border: 2px solid var(--primary-main);
+    color: var(--primary-main);
     background: transparent;
     font-weight: 600;
     transition: all 0.3s ease;
 }
 
-.btn-outline-light:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: white;
+.btn-outline-primary:hover {
+    background: var(--primary-main);
     color: white;
     transform: translateY(-2px);
 }
@@ -388,14 +346,13 @@
 }
 
 .demo-card {
-    background: rgba(255, 255, 255, 0.95);
-    border: none;
+    background: white;
+    border: 1px solid var(--border-light);
     border-radius: 20px;
     padding: 2.5rem;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     max-width: 400px;
     width: 100%;
-    backdrop-filter: blur(10px);
 }
 
 .demo-header {
@@ -458,7 +415,15 @@
 /* Features Section */
 .features-section {
     margin-bottom: 6rem;
-    padding: 4rem 0;
+    padding: 4rem 2rem;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 3rem;
 }
 
 .section-title {
@@ -475,15 +440,22 @@
     margin: 0 auto;
 }
 
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
 .feature-card {
     text-align: center;
     padding: 2.5rem 2rem;
     height: 100%;
     border-radius: 20px;
-    border: none;
+    border: 1px solid var(--border-light);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    background: white;
 }
 
 .feature-card::before {
@@ -493,7 +465,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    opacity: 0.1;
+    opacity: 0.05;
     transition: opacity 0.3s ease;
 }
 
@@ -522,7 +494,7 @@
 }
 
 .feature-card:hover::before {
-    opacity: 0.15;
+    opacity: 0.1;
 }
 
 .feature-card:hover {
@@ -571,7 +543,16 @@
 /* Recent Posts Section */
 .recent-posts-section {
     margin-bottom: 6rem;
-    padding: 4rem 0;
+    padding: 4rem 2rem;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
 }
 
 .view-all-link {
@@ -595,7 +576,7 @@
 
 .post-card {
     background: white;
-    border: none;
+    border: 1px solid var(--border-light);
     border-radius: 20px;
     padding: 2rem;
     height: 100%;
@@ -695,7 +676,10 @@
 /* CTA Section */
 .cta-section {
     margin: 6rem 0;
-    padding: 4rem 0;
+    padding: 4rem 2rem;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .gradient-card-primary {
@@ -705,6 +689,21 @@
     border-radius: 25px;
     box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
     border: none;
+}
+
+.cta-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.cta-text {
+    flex: 1;
+}
+
+.cta-action {
+    flex-shrink: 0;
 }
 
 .gradient-card-primary h2 {
@@ -753,9 +752,9 @@
         width: 100%;
     }
     
-    .cta-card {
+    .cta-content {
+        flex-direction: column;
         text-align: center;
-        padding: 2.5rem;
     }
     
     .section-title {
@@ -764,6 +763,14 @@
     
     .feature-card {
         padding: 2rem 1.5rem;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .posts-grid {
+        grid-template-columns: 1fr;
     }
 }
 </style>

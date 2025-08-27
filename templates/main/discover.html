@@ -130,30 +130,8 @@
                     </div>
                     {% endif %}
                     
-                    <!-- Mini Audio Player -->
-                    <div class="mini-player">
-                        <audio preload="none" data-post-slug="{{ post.slug }}">
-                            <source src="{{ post.get_audio_url() }}" type="audio/mpeg">
-                            Your browser does not support the audio element.
-                        </audio>
-                        <div class="player-controls">
-                            <button class="play-btn" data-audio-target="audio">
-                                <i class="bi bi-play-fill"></i>
-                            </button>
-                            <div class="player-info">
-                                <div class="player-title">{{ post.title }}</div>
-                                <div class="player-progress">
-                                    <div class="progress">
-                                        <div class="progress-bar"></div>
-                                    </div>
-                                    <div class="time-display">
-                                        <span class="current-time">0:00</span>
-                                        <span class="total-time">{{ post.format_duration() }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
+
                 </div>
                 
                 <!-- Post Footer -->
@@ -539,11 +517,10 @@
 <script>
 let currentPage = {{ page }};
 let isLoading = false;
-let currentAudio = null;
+
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeFilters();
-    initializeAudioPlayers();
     initializeLoadMore();
 });
 
@@ -610,79 +587,13 @@ function filterPosts() {
     });
 }
 
-function initializeAudioPlayers() {
-    const playButtons = document.querySelectorAll('.play-btn');
-    
-    playButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const miniPlayer = this.closest('.mini-player');
-            const audio = miniPlayer.querySelector('audio');
-            
-            if (currentAudio && currentAudio !== audio) {
-                pauseAudio(currentAudio);
-            }
-            
-            if (audio.paused) {
-                playAudio(audio, miniPlayer);
-            } else {
-                pauseAudio(audio);
-            }
-        });
-    });
-}
 
-function playAudio(audio, miniPlayer) {
-    const playBtn = miniPlayer.querySelector('.play-btn');
-    const progressBar = miniPlayer.querySelector('.progress-bar');
-    const currentTimeEl = miniPlayer.querySelector('.current-time');
-    
-    audio.play().then(() => {
-        currentAudio = audio;
-        playBtn.innerHTML = '<i class="bi bi-pause-fill"></i>';
-        playBtn.classList.add('playing');
-        
-        // Track play event
-        const postSlug = audio.dataset.postSlug;
-        if (postSlug) {
-            VoiceLog.trackPlayEvent && VoiceLog.trackPlayEvent(postSlug);
-        }
-    }).catch(err => {
-        console.error('Audio play error:', err);
-        miniPlayer.classList.add('error');
-    });
-    
-    // Update progress
-    audio.addEventListener('timeupdate', () => {
-        if (audio.duration) {
-            const progress = (audio.currentTime / audio.duration) * 100;
-            progressBar.style.width = progress + '%';
-            currentTimeEl.textContent = formatTime(audio.currentTime);
-        }
-    });
-    
-    audio.addEventListener('ended', () => {
-        pauseAudio(audio);
-    });
-}
 
-function pauseAudio(audio) {
-    const miniPlayer = audio.closest('.mini-player');
-    const playBtn = miniPlayer.querySelector('.play-btn');
-    
-    audio.pause();
-    playBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
-    playBtn.classList.remove('playing');
-    
-    if (currentAudio === audio) {
-        currentAudio = null;
-    }
-}
 
-function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
-}
+
+
+
+
 
 function initializeLoadMore() {
     const loadMoreBtn = document.getElementById('loadMoreBtn');
@@ -798,5 +709,7 @@ function showNotification(message, type) {
         }
     }, 5000);
 }
+
+
 </script>
 {% endblock %}

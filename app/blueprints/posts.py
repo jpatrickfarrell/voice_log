@@ -471,6 +471,15 @@ def serve_audio(filename):
                 file_type = "converted_mp3"
                 current_app.logger.info(f"Found converted MP3 file (without suffix): {converted_path}")
         
+        # Additional check: if filename doesn't have _converted suffix but exists in converted folder
+        if not file_path and not filename.endswith('_converted.mp3'):
+            # Try to find it in the converted folder
+            converted_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'converted', filename)
+            if os.path.exists(converted_path):
+                file_path = converted_path
+                file_type = "converted_mp3"
+                current_app.logger.info(f"Found file in converted folder: {converted_path}")
+        
         if not file_path:
             current_app.logger.error(f"Audio file not found: {filename}")
             current_app.logger.error(f"Checked paths:")
@@ -497,12 +506,40 @@ def serve_audio(filename):
         
         current_app.logger.info(f"Serving {file_type} file: {file_path} ({content_type}, {file_size} bytes)")
         
-        # Set headers for audio streaming
-        response = send_file(
-            file_path,
+        # Verify file is still accessible and get actual size
+        if not os.path.exists(file_path):
+            current_app.logger.error(f"File disappeared after size check: {file_path}")
+            abort(404, description=f"Audio file {filename} not found")
+        
+        actual_size = os.path.getsize(file_path)
+        if actual_size != file_size:
+            current_app.logger.warning(f"File size changed: expected {file_size}, got {actual_size}")
+            file_size = actual_size
+        
+        current_app.logger.info(f"Final file size: {file_size} bytes")
+        
+        # Check if file is readable and not corrupted
+        try:
+            with open(file_path, 'rb') as f:
+                # Read first few bytes to check if file is accessible
+                header = f.read(10)
+                if len(header) == 0:
+                    current_app.logger.error(f"File appears to be empty or corrupted: {file_path}")
+                    abort(500, description=f"Audio file {filename} is corrupted")
+        except Exception as e:
+            current_app.logger.error(f"Error reading file {file_path}: {str(e)}")
+            abort(500, description=f"Error reading audio file {filename}")
+        
+        # Use send_from_directory for more reliable file serving
+        directory = os.path.dirname(file_path)
+        filename_only = os.path.basename(file_path)
+        
+        response = send_from_directory(
+            directory,
+            filename_only,
             mimetype=content_type,
             as_attachment=False,
-            conditional=True  # Enable range requests for streaming
+            conditional=True
         )
         
         # Add CORS headers
@@ -512,7 +549,6 @@ def serve_audio(filename):
         
         # Add audio-specific headers
         response.headers['Accept-Ranges'] = 'bytes'
-        response.headers['Content-Length'] = str(file_size)
         
         current_app.logger.info(f"Audio served successfully: {filename} ({content_type}, {file_size} bytes)")
         return response

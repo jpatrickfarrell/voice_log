@@ -9,7 +9,7 @@ load_dotenv()
 app = create_app()
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5010))
+    port = int(os.environ.get('PORT', 5011))
     host = os.environ.get('HOST', '0.0.0.0')
     debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
     

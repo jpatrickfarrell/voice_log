@@ -1,4 +1,5 @@
 import uuid
+import time
 from datetime import datetime
 from app.services.database import get_db
 from flask import current_app, url_for
@@ -301,8 +302,21 @@ class VoicePost:
     def get_audio_url(self):
         """Get the URL for the audio file, prioritizing converted MP3 if available"""
         if self.converted_mp3_path:
-            return f"/posts/audio/{self.converted_mp3_path}"
-        return f"/posts/audio/{self.audio_filename}"
+            # Extract just the filename from the path
+            filename = os.path.basename(self.converted_mp3_path)
+            url = f"/posts/audio/{filename}"
+            print(f"DEBUG: converted_mp3_path={self.converted_mp3_path}, filename={filename}, url={url}")
+            return url
+        url = f"/posts/audio/{self.audio_filename}"
+        print(f"DEBUG: using audio_filename={self.audio_filename}, url={url}")
+        return url
+    
+    def get_audio_url_with_cache_bust(self):
+        """Get the URL for the audio file with cache busting"""
+        base_url = self.get_audio_url()
+        # Add timestamp to prevent caching issues
+        timestamp = int(time.time())
+        return f"{base_url}?t={timestamp}"
     
     def get_audio_path(self):
         """Get the file system path for the audio file, prioritizing converted MP3 if available"""
